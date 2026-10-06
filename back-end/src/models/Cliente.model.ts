@@ -1,6 +1,6 @@
 import { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import pool from '../config/db';
-import { ICliente, IClienteInput, IClienteUpdate } from '../types';
+import { ICliente, IClienteInput, IClienteUpdate } from '../routes/types';
 
 const COLS = 'id, nome, cpf, telefone, email, criado_em';
 const CAMPOS = ['nome', 'cpf', 'telefone', 'email'];

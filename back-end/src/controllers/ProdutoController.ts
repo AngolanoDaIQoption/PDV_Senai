@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { ProdutoModel } from '../models/Produto.model';
-import { IProdutoInput } from '../types';
+import { IProdutoInput } from '../routes/types';
 
 export class ProdutoController {
   // Cadastro de produto (com validação de preço e código único)

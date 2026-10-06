@@ -1,6 +1,6 @@
 import { PoolConnection, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import pool from '../config/db';
-import { IProduto, IProdutoInput, IProdutoUpdate } from '../types';
+import { IProduto, IProdutoInput, IProdutoUpdate } from '../routes/types';
 
 const COLS = 'id, codigo_barras, descricao, preco, estoque, ativo, criado_em';
 const CAMPOS = ['codigo_barras', 'descricao', 'preco', 'estoque', 'ativo'];

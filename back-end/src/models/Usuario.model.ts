@@ -1,6 +1,6 @@
 import { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import pool from '../config/db';
-import { IUsuario, IUsuarioInput, IUsuarioUpdate } from '../types';
+import { IUsuario, IUsuarioInput, IUsuarioUpdate } from '../routes/types';
 
 const COLS = 'id, nome, email, perfil, ativo, criado_em';
 const CAMPOS = ['nome', 'email', 'senha', 'perfil', 'ativo'];

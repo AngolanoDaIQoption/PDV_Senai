@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { UsuarioModel } from '../models/Usuario.model';
-import { IUsuarioInput } from '../types';
+import { IUsuarioInput } from '../routes/types';
 
 export class UsuarioController {
   // RF02: Cadastrar utilizador com palavra-passe encriptada

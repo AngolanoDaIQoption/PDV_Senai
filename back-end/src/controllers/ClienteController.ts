@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { ClienteModel } from '../models/Cliente.model';
-import { IClienteInput, IClienteUpdate } from '../types';
+import { IClienteInput, IClienteUpdate } from '../routes/types';
 
 export class ClienteController {
   // RF05: Criar novo cliente

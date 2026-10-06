@@ -1,6 +1,6 @@
-import { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
-import pool from "../config/db";
-import { IItemVenda } from "../types";
+import { PoolConnection, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
+import pool from '../config/db';
+import { IItemVenda } from '../routes/types';
 
 export interface IItemVendaInsert {
   venda_id: number;

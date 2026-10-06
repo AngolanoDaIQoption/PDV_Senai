@@ -4,7 +4,7 @@ import pool from '../config/db';
 import { ProdutoModel } from '../models/Produto.model';
 import { UsuarioModel } from '../models/Usuario.model';
 import { ItemVendaModel } from '../models/ItemVenda.model';
-import { IVendaInput } from '../types';
+import { IVendaInput } from '../routes/types';
 
 export class VendaController {
   static async create(req: Request, res: Response): Promise<Response> {
