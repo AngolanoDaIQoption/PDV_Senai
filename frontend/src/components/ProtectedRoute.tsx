@@ -1,6 +1,19 @@
 import { Navigate, Outlet } from "react-router-dom";
+import Navbar from "./Navbar";
 
 export default function ProtectedRoute() {
-  const logado = localStorage.getItem("usuario");
-  return logado ? <Outlet /> : <Navigate to="/login" replace />;
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return (
+    <>
+      <Navbar />
+      <main className="container">
+        <Outlet />
+      </main>
+    </>
+  );
 }

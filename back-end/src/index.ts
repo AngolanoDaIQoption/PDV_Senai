@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { testConnection } from './config/db';
 import produtoRoutes from './routes/produto.routes';
 import usuarioRoutes from './routes/usuario.routes';
+import authRoutes from './routes/auth.routes';
 import vendaRoutes from './routes/venda.routes';
 
 // 1. Importar as rotas de clientes
@@ -31,6 +32,7 @@ app.get('/api/health', (req: Request, res: Response) => {
 // Todas as rotas de clientes ficarão acessíveis em http://localhost:3000/api/clientes
 app.use('/api/clientes', clienteRoutes);
 app.use('/api/produtos', produtoRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/vendas', vendaRoutes);
 

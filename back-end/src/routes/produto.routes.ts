@@ -12,4 +12,10 @@ produtoRoutes.post('/', ProdutoController.create);
 // Endpoint para inativar (usamos PATCH pois é uma atualização parcial do status)
 produtoRoutes.patch('/:id/inativar', ProdutoController.inativar);
 
+// Endpoint para reativar
+produtoRoutes.patch('/:id/ativar', ProdutoController.ativar);
+
+// Endpoint para editar
+produtoRoutes.put('/:id', ProdutoController.update);
+
 export default produtoRoutes;

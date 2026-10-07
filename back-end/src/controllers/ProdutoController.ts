@@ -39,8 +39,9 @@ export class ProdutoController {
         return res.status(200).json(produtos);
       }
       
-      // Retorna apenas os ativos por padrão para não poluir o PDV
-      const todos = await ProdutoModel.findAll(true);
+      // Se passar ?todos=true, traz ativos e inativos (usado na tela de Produtos)
+      const apenasAtivos = req.query.todos !== "true";
+      const todos = await ProdutoModel.findAll(apenasAtivos);
       return res.status(200).json(todos);
     } catch (error) {
       console.error(error);
@@ -62,6 +63,47 @@ export class ProdutoController {
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: 'Erro ao inativar produto.' });
+    }
+  }
+
+  // Reativação lógica do produto
+  static async ativar(req: Request, res: Response): Promise<Response> {
+    try {
+      const id = Number(req.params.id);
+      const sucesso = await ProdutoModel.ativar(id);
+      
+      if (!sucesso) {
+        return res.status(404).json({ error: 'Produto não encontrado.' });
+      }
+      
+      return res.status(200).json({ message: 'Produto reativado com sucesso.' });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Erro ao ativar produto.' });
+    }
+  }
+
+  // Edição do produto
+  static async update(req: Request, res: Response): Promise<Response> {
+    try {
+      const id = Number(req.params.id);
+      const { codigo_barras, descricao, preco, estoque, ativo } = req.body;
+      const sucesso = await ProdutoModel.update(id, {
+        codigo_barras,
+        descricao,
+        preco,
+        estoque,
+        ativo,
+      });
+
+      if (!sucesso) {
+        return res.status(404).json({ error: 'Produto não encontrado ou nenhuma alteração enviada.' });
+      }
+
+      return res.status(200).json({ message: 'Produto atualizado com sucesso.' });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Erro ao atualizar produto.' });
     }
   }
 }

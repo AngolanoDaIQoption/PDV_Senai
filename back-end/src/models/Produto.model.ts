@@ -51,4 +51,8 @@ export class ProdutoModel {
     const [r] = await pool.execute<ResultSetHeader>('UPDATE produtos SET ativo = FALSE WHERE id = ?', [id]);
     return r.affectedRows > 0;
   }
+  static async ativar(id: number): Promise<boolean> {
+    const [r] = await pool.execute<ResultSetHeader>('UPDATE produtos SET ativo = TRUE WHERE id = ?', [id]);
+    return r.affectedRows > 0;
+  }
 }

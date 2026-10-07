@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import { UsuarioModel } from '../models/Usuario.model';
 import { IUsuarioInput } from '../routes/types';
 
@@ -43,29 +44,32 @@ export class UsuarioController {
     try {
       const { email, senha } = req.body;
 
-      const usuario = await UsuarioModel.findByEmail(email);
-      
-      // Verifica se o utilizador existe e se está ativo (RN12)
-      if (!usuario) {
-        return res.status(401).json({ error: 'Credenciais inválidas.' });
-      }
-      if (!usuario.ativo) {
-        return res.status(403).json({ error: 'Utilizador inativo. Acesso negado.' });
+      if (!email || !senha) {
+        return res.status(400).json({ error: 'E-mail e senha são obrigatórios.' });
       }
 
-      // Compara a palavra-passe inserida com o hash do banco
+      const usuario = await UsuarioModel.findByEmail(email);
+
+      if (!usuario || !usuario.ativo) {
+        return res.status(401).json({ error: 'Credenciais inválidas.' });
+      }
+
       const senhaValida = await bcrypt.compare(senha, usuario.senha!);
       if (!senhaValida) {
         return res.status(401).json({ error: 'Credenciais inválidas.' });
       }
 
-      // Remove a senha do objeto antes de devolver ao frontend
       const { senha: _, ...dadosUsuario } = usuario;
+      const token = jwt.sign(
+        { id: usuario.id, perfil: usuario.perfil },
+        process.env.JWT_SECRET || 'pdv_dev_secret',
+        { expiresIn: '8h' }
+      );
 
-      return res.status(200).json({ 
-        message: 'Login efetuado com sucesso.', 
-        usuario: dadosUsuario 
-        // Nota: Numa aplicação real completa adicionaríamos aqui a geração do Token JWT
+      return res.status(200).json({
+        message: 'Login efetuado com sucesso.',
+        token,
+        usuario: dadosUsuario,
       });
     } catch (error) {
       console.error(error);
