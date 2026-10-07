@@ -17,8 +17,13 @@ export default function Navbar() {
 
       <nav className="navbar-links">
         <NavLink to="/pdv">PDV</NavLink>
-        <NavLink to="/produtos">Produtos</NavLink>
         <NavLink to="/clientes">Clientes</NavLink>
+        {usuario?.perfil === "GERENTE" && (
+          <>
+            <NavLink to="/produtos">Produtos</NavLink>
+            <NavLink to="/vendas">Vendas</NavLink>
+          </>
+        )}
       </nav>
 
       <div className="navbar-usuario">

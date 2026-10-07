@@ -4,6 +4,7 @@ import pool from '../config/db';
 import { ProdutoModel } from '../models/Produto.model';
 import { UsuarioModel } from '../models/Usuario.model';
 import { ItemVendaModel } from '../models/ItemVenda.model';
+import { VendaModel } from '../models/Venda.model';
 import { IVendaInput } from '../routes/types';
 
 export class VendaController {
@@ -102,6 +103,23 @@ export class VendaController {
     } finally {
       // Liberta a conexão de volta para a pool
       connection.release();
+    }
+  }
+
+  // RF11 / RF06: Consulta e histórico de vendas para o Gerente
+  static async listarTodas(req: Request, res: Response): Promise<Response> {
+    try {
+      const { data, cliente, operador } = req.query as {
+        data?: string;
+        cliente?: string;
+        operador?: string;
+      };
+
+      const vendas = await VendaModel.listarComFiltros({ data, cliente, operador });
+      return res.status(200).json(vendas);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Erro ao buscar histórico de vendas.' });
     }
   }
 }

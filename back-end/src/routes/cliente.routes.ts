@@ -1,18 +1,19 @@
 import { Router } from 'express';
 import { ClienteController } from '../controllers/ClienteController';
+import { autenticarToken, autorizarPerfil } from '../middlewares/auth.middleware';
 
 const clienteRoutes = Router();
 
-// Endpoint para listar todos
-clienteRoutes.get('/', ClienteController.findAll);
+// Endpoint para listar todos (CAIXA e GERENTE)
+clienteRoutes.get('/', autenticarToken, autorizarPerfil(['CAIXA', 'GERENTE']), ClienteController.findAll);
 
-// Endpoint para buscar por ID
-clienteRoutes.get('/:id', ClienteController.findById);
+// Endpoint para buscar por ID (CAIXA e GERENTE)
+clienteRoutes.get('/:id', autenticarToken, autorizarPerfil(['CAIXA', 'GERENTE']), ClienteController.findById);
 
-// Endpoint para cadastrar (com validação de duplicidade RN01)
-clienteRoutes.post('/', ClienteController.create);
+// Endpoint para cadastrar (CAIXA e GERENTE)
+clienteRoutes.post('/', autenticarToken, autorizarPerfil(['CAIXA', 'GERENTE']), ClienteController.create);
 
-// Endpoint para editar
-clienteRoutes.put('/:id', ClienteController.update);
+// Endpoint para editar (CAIXA e GERENTE)
+clienteRoutes.put('/:id', autenticarToken, autorizarPerfil(['CAIXA', 'GERENTE']), ClienteController.update);
 
 export default clienteRoutes;

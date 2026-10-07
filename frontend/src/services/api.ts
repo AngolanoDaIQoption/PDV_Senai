@@ -1,4 +1,4 @@
-import type { Cliente, Produto, Usuario } from "../types";
+import type { Cliente, Produto, Usuario, VendaHistorico } from "../types";
 
 const API_URL = "http://localhost:3000/api";
 
@@ -162,4 +162,19 @@ export async function atualizarCliente(
     method: "PUT",
     body: JSON.stringify(cliente),
   });
+}
+
+export async function buscarVendas(filtros?: {
+  data?: string;
+  cliente?: string;
+  operador?: string;
+}): Promise<VendaHistorico[]> {
+  const params = new URLSearchParams();
+  if (filtros?.data) params.set("data", filtros.data);
+  if (filtros?.cliente) params.set("cliente", filtros.cliente);
+  if (filtros?.operador) params.set("operador", filtros.operador);
+
+  const query = params.toString() ? `?${params.toString()}` : "";
+  const dados = await apiFetch<VendaHistorico[]>(`/vendas${query}`);
+  return Array.isArray(dados) ? dados : [];
 }

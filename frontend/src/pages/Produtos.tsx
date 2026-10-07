@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import type { Produto } from "../types";
+import type { Produto, Usuario } from "../types";
 import { buscarProdutos, criarProduto, atualizarProduto, inativarProduto, reativarProduto } from "../services/api";
 import { formatarMoeda } from "../utils/format";
 
@@ -177,6 +177,9 @@ export default function Produtos() {
     }
   }
 
+  const usuario: Usuario | null = JSON.parse(localStorage.getItem("usuario") ?? "null");
+  const ehGerente = usuario?.perfil === "GERENTE";
+
   const produtoEmEdicao = editandoId !== null ? produtos.find((p) => p.id === editandoId) : null;
   const editandoInativo = produtoEmEdicao?.ativo === false;
 
@@ -189,73 +192,75 @@ export default function Produtos() {
 
   return (
     <div className="pagina">
-      <section className="card">
-        <h2>{editandoId !== null ? "Editar produto" : "Novo produto"}</h2>
+      {ehGerente && (
+        <section className="card">
+          <h2>{editandoId !== null ? "Editar produto" : "Novo produto"}</h2>
 
-        <form className="form-grid" onSubmit={salvar}>
-          <label>
-            Código de barras
-            <input
-              value={form.codigo}
-              onChange={(e) => atualizar("codigo", e.target.value)}
-              placeholder="Ex: 7891234567890"
-            />
-          </label>
-          <label className="largo">
-            Descrição
-            <input
-              value={form.descricao}
-              onChange={(e) => atualizar("descricao", e.target.value)}
-              placeholder="Ex: Camiseta Básica Algodão"
-            />
-          </label>
-          <label>
-            Preço (R$)
-            <input
-              type="number"
-              step="0.01"
-              min="0.01"
-              value={form.preco}
-              onChange={(e) => atualizar("preco", e.target.value)}
-              placeholder="0.00"
-            />
-          </label>
-          <label>
-            Estoque
-            <input
-              type="number"
-              step="1"
-              min="0"
-              value={form.estoque}
-              onChange={(e) => atualizar("estoque", e.target.value)}
-              placeholder="0"
-            />
-          </label>
+          <form className="form-grid" onSubmit={salvar}>
+            <label>
+              Código de barras
+              <input
+                value={form.codigo}
+                onChange={(e) => atualizar("codigo", e.target.value)}
+                placeholder="Ex: 7891234567890"
+              />
+            </label>
+            <label className="largo">
+              Descrição
+              <input
+                value={form.descricao}
+                onChange={(e) => atualizar("descricao", e.target.value)}
+                placeholder="Ex: Camiseta Básica Algodão"
+              />
+            </label>
+            <label>
+              Preço (R$)
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={form.preco}
+                onChange={(e) => atualizar("preco", e.target.value)}
+                placeholder="0.00"
+              />
+            </label>
+            <label>
+              Estoque
+              <input
+                type="number"
+                step="1"
+                min="0"
+                value={form.estoque}
+                onChange={(e) => atualizar("estoque", e.target.value)}
+                placeholder="0"
+              />
+            </label>
 
-          {editandoInativo && (
-            <div style={{ gridColumn: "1 / -1", color: "#b42318", fontSize: "0.9rem" }}>
-              Produto inativo. Salvar as alterações irá reativá-lo.
-            </div>
-          )}
-
-          <div className="linha acoes-form">
-            {editandoId !== null && (
-              <button type="button" className="btn btn-secundario" onClick={cancelarEdicao}>
-                Cancelar
-              </button>
+            {editandoInativo && (
+              <div style={{ gridColumn: "1 / -1", color: "#b42318", fontSize: "0.9rem" }}>
+                Produto inativo. Salvar as alterações irá reativá-lo.
+              </div>
             )}
-            <button type="submit" className="btn btn-primario">
-              {editandoId !== null
-                ? editandoInativo
-                  ? "Salvar e reativar produto"
-                  : "Salvar alterações"
-                : "Cadastrar produto"}
-            </button>
-          </div>
-        </form>
 
-        {erro && <p className="erro">{erro}</p>}
-      </section>
+            <div className="linha acoes-form">
+              {editandoId !== null && (
+                <button type="button" className="btn btn-secundario" onClick={cancelarEdicao}>
+                  Cancelar
+                </button>
+              )}
+              <button type="submit" className="btn btn-primario">
+                {editandoId !== null
+                  ? editandoInativo
+                    ? "Salvar e reativar produto"
+                    : "Salvar alterações"
+                  : "Cadastrar produto"}
+              </button>
+            </div>
+          </form>
+
+          {erro && <p className="erro">{erro}</p>}
+        </section>
+      )}
 
       <section className="card">
         <h2>
@@ -279,7 +284,7 @@ export default function Produtos() {
               <th>Preço</th>
               <th>Estoque</th>
               <th>Situação</th>
-              <th></th>
+              {ehGerente && <th></th>}
             </tr>
           </thead>
           <tbody>
@@ -290,35 +295,37 @@ export default function Produtos() {
                 <td>{formatarMoeda(p.preco)}</td>
                 <td>{p.estoque}</td>
                 <td>{p.ativo !== false ? "Ativo" : "Inativo"}</td>
-                <td>
-                  <div className="linha">
-                    <button type="button" className="btn btn-secundario" onClick={() => editar(p)}>
-                      Editar
-                    </button>
-                    {p.ativo === false ? (
-                      <button
-                        type="button"
-                        className="btn btn-secundario"
-                        onClick={() => handleReativar(p.id)}
-                      >
-                        Reativar
+                {ehGerente && (
+                  <td>
+                    <div className="linha">
+                      <button type="button" className="btn btn-secundario" onClick={() => editar(p)}>
+                        Editar
                       </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="btn btn-perigo"
-                        onClick={() => handleInativar(p.id)}
-                      >
-                        Inativar
-                      </button>
-                    )}
-                  </div>
-                </td>
+                      {p.ativo === false ? (
+                        <button
+                          type="button"
+                          className="btn btn-secundario"
+                          onClick={() => handleReativar(p.id)}
+                        >
+                          Reativar
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="btn btn-perigo"
+                          onClick={() => handleInativar(p.id)}
+                        >
+                          Inativar
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                )}
               </tr>
             ))}
             {produtosFiltrados.length === 0 && !carregando && (
               <tr>
-                <td colSpan={6} className="texto-suave">
+                <td colSpan={ehGerente ? 6 : 5} className="texto-suave">
                   Nenhum produto cadastrado. Use o formulário acima para começar.
                 </td>
               </tr>

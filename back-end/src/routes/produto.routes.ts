@@ -1,21 +1,22 @@
 import { Router } from 'express';
 import { ProdutoController } from '../controllers/ProdutoController';
+import { autenticarToken, autorizarPerfil } from '../middlewares/auth.middleware';
 
 const produtoRoutes = Router();
 
-// Endpoint para buscar (ex: /api/produtos ou /api/produtos?q=camiseta)
+// Endpoint para buscar (aberto para todos)
 produtoRoutes.get('/', ProdutoController.listar);
 
-// Endpoint para cadastrar
-produtoRoutes.post('/', ProdutoController.create);
+// Endpoint para cadastrar (apenas GERENTE)
+produtoRoutes.post('/', autenticarToken, autorizarPerfil(['GERENTE']), ProdutoController.create);
 
-// Endpoint para inativar (usamos PATCH pois é uma atualização parcial do status)
-produtoRoutes.patch('/:id/inativar', ProdutoController.inativar);
+// Endpoint para inativar (apenas GERENTE)
+produtoRoutes.patch('/:id/inativar', autenticarToken, autorizarPerfil(['GERENTE']), ProdutoController.inativar);
 
-// Endpoint para reativar
-produtoRoutes.patch('/:id/ativar', ProdutoController.ativar);
+// Endpoint para reativar (apenas GERENTE)
+produtoRoutes.patch('/:id/ativar', autenticarToken, autorizarPerfil(['GERENTE']), ProdutoController.ativar);
 
-// Endpoint para editar
-produtoRoutes.put('/:id', ProdutoController.update);
+// Endpoint para editar (apenas GERENTE)
+produtoRoutes.put('/:id', autenticarToken, autorizarPerfil(['GERENTE']), ProdutoController.update);
 
 export default produtoRoutes;
