@@ -35,11 +35,19 @@ export default function PDV() {
   }, []);
 
   const termo = busca.trim().toLowerCase();
-  const produtosFiltrados = produtos.filter(
-    (p) =>
-      p.codigo.toLowerCase().includes(termo) ||
-      p.descricao.toLowerCase().includes(termo)
-  );
+  const produtosFiltrados = produtos.filter((p) => {
+    if (!termo) return true;
+
+    const codigo = p.codigo.toLowerCase();
+    const descricao = p.descricao.toLowerCase();
+
+    return (
+      codigo.startsWith(termo) ||
+      descricao.startsWith(termo) ||
+      codigo.includes(termo) ||
+      descricao.includes(termo)
+    );
+  });
 
   function adicionar(produto: Produto) {
     setMensagemErro("");
