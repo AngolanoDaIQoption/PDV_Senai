@@ -1,14 +1,22 @@
 import { useEffect, useState } from "react";
 import type { Perfil, Usuario } from "../types";
-import { atualizarUsuario, buscarUsuarios } from "../services/api";
+import { atualizarUsuario, buscarUsuarios, criarUsuario } from "../services/api";
 
 const perfis: Perfil[] = ["CAIXA", "SUPERVISOR"];
+const formularioInicial = {
+  nome: "",
+  email: "",
+  senha: "",
+  perfil: "CAIXA" as Perfil,
+};
 
 export default function Usuarios() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [salvandoId, setSalvandoId] = useState<number | null>(null);
+  const [form, setForm] = useState(formularioInicial);
+  const [salvandoNovo, setSalvandoNovo] = useState(false);
 
   async function carregarUsuarios() {
     try {
@@ -65,9 +73,100 @@ export default function Usuarios() {
     }
   }
 
+  async function cadastrarUsuario(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const nome = form.nome.trim();
+    const email = form.email.trim();
+    const senha = form.senha.trim();
+
+    if (!nome || !email || !senha) {
+      setErro("Preencha nome, e-mail e senha para cadastrar o usuário.");
+      return;
+    }
+
+    try {
+      setErro("");
+      setSalvandoNovo(true);
+      const res = await criarUsuario({
+        nome,
+        email,
+        senha,
+        perfil: form.perfil,
+      });
+
+      setForm(formularioInicial);
+      await carregarUsuarios();
+      setErro("");
+      console.log("Usuário criado:", res);
+    } catch (err) {
+      console.error(err);
+      setErro(err instanceof Error ? err.message : "Não foi possível cadastrar o usuário.");
+    } finally {
+      setSalvandoNovo(false);
+    }
+  }
+
   return (
     <div className="pagina">
       <section className="card">
+        <h2>Novo usuário</h2>
+
+        <form onSubmit={cadastrarUsuario} style={{ display: "grid", gap: 12, marginBottom: 20 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12 }}>
+            <label>
+              Nome
+              <input
+                value={form.nome}
+                onChange={(event) => setForm((estado) => ({ ...estado, nome: event.target.value }))}
+                placeholder="Ex: João da Silva"
+              />
+            </label>
+
+            <label>
+              E-mail
+              <input
+                type="email"
+                value={form.email}
+                onChange={(event) => setForm((estado) => ({ ...estado, email: event.target.value }))}
+                placeholder="Ex: joao@empresa.com"
+              />
+            </label>
+
+            <label>
+              Senha
+              <input
+                type="password"
+                value={form.senha}
+                onChange={(event) => setForm((estado) => ({ ...estado, senha: event.target.value }))}
+                placeholder="Digite a senha"
+              />
+            </label>
+
+            <label>
+              Perfil
+              <select
+                value={form.perfil}
+                onChange={(event) =>
+                  setForm((estado) => ({ ...estado, perfil: event.target.value as Perfil }))
+                }
+              >
+                {perfis.map((perfil) => (
+                  <option key={perfil} value={perfil}>
+                    {perfil}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <button type="submit" className="btn btn-primario" disabled={salvandoNovo}>
+              {salvandoNovo ? "Cadastrando..." : "Cadastrar usuário"}
+            </button>
+          </div>
+        </form>
+
         <h2>Gestão de usuários</h2>
 
         {erro && <p className="erro">{erro}</p>}

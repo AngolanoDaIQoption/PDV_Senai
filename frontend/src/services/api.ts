@@ -168,7 +168,17 @@ export async function buscarUsuarios(): Promise<Usuario[]> {
   const dados = await apiFetch<Usuario[]>("/usuarios");
   return Array.isArray(dados) ? dados : [];
 }
-
+export async function criarUsuario(dados: {
+  nome: string;
+  email: string;
+  senha: string;
+  perfil: Perfil;
+}): Promise<{ message: string; id: number }> {
+  return apiFetch<{ message: string; id: number }>('/usuarios', {
+    method: 'POST',
+    body: JSON.stringify(dados),
+  });
+}
 export async function atualizarUsuario(
   id: number,
   dados: Partial<{ perfil: Perfil; ativo: boolean }>
