@@ -178,7 +178,7 @@ export default function Produtos() {
   }
 
   const usuario: Usuario | null = JSON.parse(localStorage.getItem("usuario") ?? "null");
-  const ehGerente = usuario?.perfil === "GERENTE";
+  const podeGerenciarProdutos = ["SUPERVISOR", "GERENTE"].includes(usuario?.perfil ?? "");
 
   const produtoEmEdicao = editandoId !== null ? produtos.find((p) => p.id === editandoId) : null;
   const editandoInativo = produtoEmEdicao?.ativo === false;
@@ -192,7 +192,7 @@ export default function Produtos() {
 
   return (
     <div className="pagina">
-      {ehGerente && (
+      {podeGerenciarProdutos && (
         <section className="card">
           <h2>{editandoId !== null ? "Editar produto" : "Novo produto"}</h2>
 
@@ -284,7 +284,7 @@ export default function Produtos() {
               <th>Preço</th>
               <th>Estoque</th>
               <th>Situação</th>
-              {ehGerente && <th></th>}
+              {podeGerenciarProdutos && <th></th>}
             </tr>
           </thead>
           <tbody>
@@ -295,7 +295,7 @@ export default function Produtos() {
                 <td>{formatarMoeda(p.preco)}</td>
                 <td>{p.estoque}</td>
                 <td>{p.ativo !== false ? "Ativo" : "Inativo"}</td>
-                {ehGerente && (
+                {podeGerenciarProdutos && (
                   <td>
                     <div className="linha">
                       <button type="button" className="btn btn-secundario" onClick={() => editar(p)}>
@@ -325,7 +325,7 @@ export default function Produtos() {
             ))}
             {produtosFiltrados.length === 0 && !carregando && (
               <tr>
-                <td colSpan={ehGerente ? 6 : 5} className="texto-suave">
+                <td colSpan={podeGerenciarProdutos ? 6 : 5} className="texto-suave">
                   Nenhum produto cadastrado. Use o formulário acima para começar.
                 </td>
               </tr>

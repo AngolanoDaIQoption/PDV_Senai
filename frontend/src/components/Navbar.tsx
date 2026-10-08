@@ -5,6 +5,11 @@ export default function Navbar() {
   const navigate = useNavigate();
   const usuario: Usuario | null = JSON.parse(localStorage.getItem("usuario") ?? "null");
 
+  const podeVerClientes = ["CAIXA", "GERENTE"].includes(usuario?.perfil ?? "");
+  const podeGerenciarProdutos = ["SUPERVISOR", "GERENTE"].includes(usuario?.perfil ?? "");
+  const podeVerVendas = usuario?.perfil === "GERENTE";
+  const podeGerenciarUsuarios = usuario?.perfil === "GERENTE";
+
   function sair() {
     localStorage.removeItem("token");
     localStorage.removeItem("usuario");
@@ -17,13 +22,10 @@ export default function Navbar() {
 
       <nav className="navbar-links">
         <NavLink to="/pdv">PDV</NavLink>
-        <NavLink to="/clientes">Clientes</NavLink>
-        {usuario?.perfil === "GERENTE" && (
-          <>
-            <NavLink to="/produtos">Produtos</NavLink>
-            <NavLink to="/vendas">Vendas</NavLink>
-          </>
-        )}
+        {podeVerClientes && <NavLink to="/clientes">Clientes</NavLink>}
+        {podeGerenciarProdutos && <NavLink to="/produtos">Produtos</NavLink>}
+        {podeVerVendas && <NavLink to="/vendas">Vendas</NavLink>}
+        {podeGerenciarUsuarios && <NavLink to="/usuarios">Usuários</NavLink>}
       </nav>
 
       <div className="navbar-usuario">

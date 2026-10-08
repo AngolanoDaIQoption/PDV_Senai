@@ -1,4 +1,4 @@
-export type Perfil = 'CAIXA' | 'GERENTE';
+export type Perfil = 'CAIXA' | 'SUPERVISOR' | 'GERENTE';
 export interface IUsuario { id: number; nome: string; email: string; senha?: string; perfil: Perfil; ativo: boolean; criado_em?: Date }
 export type IUsuarioInput = { nome: string; email: string; senha: string; perfil: Perfil; ativo?: boolean };
 export type IUsuarioUpdate = Partial<IUsuarioInput>;

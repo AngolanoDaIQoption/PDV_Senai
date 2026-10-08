@@ -4,8 +4,8 @@ import { autenticarToken, autorizarPerfil } from '../middlewares/auth.middleware
 
 const clienteRoutes = Router();
 
-// Endpoint para listar todos (CAIXA e GERENTE)
-clienteRoutes.get('/', autenticarToken, autorizarPerfil(['CAIXA', 'GERENTE']), ClienteController.findAll);
+// Endpoint para listar todos (CAIXA, SUPERVISOR e GERENTE)
+clienteRoutes.get('/', autenticarToken, autorizarPerfil(['CAIXA', 'SUPERVISOR', 'GERENTE']), ClienteController.findAll);
 
 // Endpoint para buscar por ID (CAIXA e GERENTE)
 clienteRoutes.get('/:id', autenticarToken, autorizarPerfil(['CAIXA', 'GERENTE']), ClienteController.findById);

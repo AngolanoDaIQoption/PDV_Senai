@@ -1,4 +1,4 @@
-import type { Cliente, Produto, Usuario, VendaHistorico } from "../types";
+import type { Cliente, Perfil, Produto, Usuario, VendaHistorico } from "../types";
 
 const API_URL = "http://localhost:3000/api";
 
@@ -164,6 +164,21 @@ export async function atualizarCliente(
   });
 }
 
+export async function buscarUsuarios(): Promise<Usuario[]> {
+  const dados = await apiFetch<Usuario[]>("/usuarios");
+  return Array.isArray(dados) ? dados : [];
+}
+
+export async function atualizarUsuario(
+  id: number,
+  dados: Partial<{ perfil: Perfil; ativo: boolean }>
+): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>(`/usuarios/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(dados),
+  });
+}
+
 export async function buscarVendas(filtros?: {
   data?: string;
   cliente?: string;
@@ -177,4 +192,4 @@ export async function buscarVendas(filtros?: {
   const query = params.toString() ? `?${params.toString()}` : "";
   const dados = await apiFetch<VendaHistorico[]>(`/vendas${query}`);
   return Array.isArray(dados) ? dados : [];
-}
+}

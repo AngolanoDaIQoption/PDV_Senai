@@ -1,10 +1,11 @@
-export type Perfil = "CAIXA" | "GERENTE";
+export type Perfil = "CAIXA" | "SUPERVISOR" | "GERENTE";
 
 export interface Usuario {
   id: number;
   nome: string;
   email: string;
   perfil: Perfil;
+  ativo?: boolean;
 }
 
 export interface Produto {
@@ -22,6 +23,7 @@ export interface Cliente {
   cpf: string;
   telefone: string;
   email: string;
+  ativo?: boolean;
 }
 
 export interface ItemCarrinho {

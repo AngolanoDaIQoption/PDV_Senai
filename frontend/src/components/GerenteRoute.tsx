@@ -1,7 +1,11 @@
 import { Navigate, Outlet } from "react-router-dom";
-import type { Usuario } from "../types";
+import type { Perfil, Usuario } from "../types";
 
-export default function GerenteRoute() {
+interface GerenteRouteProps {
+  perfisPermitidos?: Perfil[];
+}
+
+export default function GerenteRoute({ perfisPermitidos = ["GERENTE"] }: GerenteRouteProps) {
   const usuarioRaw = localStorage.getItem("usuario");
   const usuario: Usuario | null = usuarioRaw ? JSON.parse(usuarioRaw) : null;
 
@@ -9,7 +13,7 @@ export default function GerenteRoute() {
     return <Navigate to="/login" replace />;
   }
 
-  if (usuario.perfil !== "GERENTE") {
+  if (!perfisPermitidos.includes(usuario.perfil)) {
     return <Navigate to="/pdv" replace />;
   }
 

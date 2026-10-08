@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import type { Cliente } from "../types";
+import type { Cliente, Usuario } from "../types";
 import { buscarClientes, criarCliente, atualizarCliente } from "../services/api";
 import { mascararCpf, mascararTelefone, validarCpf } from "../utils/format";
 
@@ -11,6 +11,8 @@ export default function Clientes() {
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(true);
+  const usuario: Usuario | null = JSON.parse(localStorage.getItem("usuario") ?? "null");
+  const ehGerente = usuario?.perfil === "GERENTE";
 
   async function carregarClientes() {
     try {
@@ -109,6 +111,19 @@ export default function Clientes() {
     });
   }
 
+  function alternarAtivo(cliente: Cliente) {
+    if (!ehGerente) {
+      setErro("Apenas o gerente pode inativar clientes.");
+      return;
+    }
+
+    setClientes((lista) =>
+      lista.map((item) =>
+        item.id === cliente.id ? { ...item, ativo: !(item.ativo ?? true) } : item
+      )
+    );
+  }
+
   return (
     <div className="pagina">
       <section className="card">
@@ -174,7 +189,7 @@ export default function Clientes() {
           </thead>
           <tbody>
             {clientes.map((c) => (
-              <tr key={c.id}>
+              <tr key={c.id} style={{ opacity: c.ativo === false ? 0.55 : 1 }}>
                 <td>{c.nome}</td>
                 <td>{mascararCpf(c.cpf)}</td>
                 <td>{mascararTelefone(c.telefone)}</td>
@@ -184,6 +199,15 @@ export default function Clientes() {
                     <button className="btn btn-secundario" onClick={() => editar(c)}>
                       Editar
                     </button>
+                    {ehGerente && (
+                      <button
+                        className="btn btn-secundario"
+                        onClick={() => alternarAtivo(c)}
+                        title={c.ativo === false ? "Reativar cliente" : "Inativar cliente"}
+                      >
+                        {c.ativo === false ? "Reativar" : "Inativar"}
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

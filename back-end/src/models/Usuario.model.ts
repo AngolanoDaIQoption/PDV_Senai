@@ -16,6 +16,12 @@ export class UsuarioModel {
     const [rows] = await pool.execute<RowDataPacket[]>(`SELECT ${COLS} FROM usuarios WHERE id = ?`, [id]);
     return (rows[0] as IUsuario) ?? null;
   }
+
+  static async buscarPorId(id: number): Promise<IUsuario | null> {
+    const [rows] = await pool.execute<RowDataPacket[]>(`SELECT ${COLS}, senha FROM usuarios WHERE id = ?`, [id]);
+    return (rows[0] as IUsuario) ?? null;
+  }
+
   // inclui a senha (hash) para o login da Sprint 3
   static async findByEmail(email: string): Promise<IUsuario | null> {
     const [rows] = await pool.execute<RowDataPacket[]>(`SELECT ${COLS}, senha FROM usuarios WHERE email = ?`, [email]);
