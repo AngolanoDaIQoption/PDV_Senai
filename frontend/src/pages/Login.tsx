@@ -32,6 +32,18 @@ export default function Login() {
     }
   }
 
+  async function handleSeed() {
+    try {
+      const response = await fetch("http://localhost:3000/api/usuarios/seed", {
+        method: "POST",
+      });
+      const data = await response.json();
+      alert(data.message || data.error);
+    } catch {
+      alert("Erro ao conectar com o servidor para criar o usuário inicial.");
+    }
+  }
+
   return (
     <div className="login-tela">
       <form className="card login-card" onSubmit={entrar}>
@@ -61,6 +73,24 @@ export default function Login() {
 
         <button type="submit" className="btn btn-primario" disabled={carregando}>
           {carregando ? "Entrando..." : "Entrar"}
+        </button>
+
+        <button
+          type="button"
+          onClick={handleSeed}
+          style={{
+            marginTop: "12px",
+            background: "none",
+            border: "none",
+            color: "#64748b",
+            fontSize: "12px",
+            textDecoration: "underline",
+            cursor: "pointer",
+            width: "100%",
+            textAlign: "center",
+          }}
+        >
+          Criar Usuário Inicial (Setup)
         </button>
       </form>
     </div>
