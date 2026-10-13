@@ -15,17 +15,22 @@ usuarioRoutes.post('/seed', async (req, res): Promise<any> => {
       return res.status(400).json({ message: 'O banco de dados já possui usuários cadastrados!' });
     }
 
-    // 2. Criptografa a senha do Gerente Master
-    const senhaHash = await bcrypt.hash('123', 10);
+    // 2. Extrai os dados digitados pelo usuário (ou usa valores padrão caso estejam vazios)
+    const email = req.body.email?.trim() || 'gerente@ms2.com';
+    const senhaLimpa = req.body.senha || '123456';
+    const nome = req.body.nome || 'Gerente Principal';
 
-    // 3. Insere o primeiro Gerente
+    // 3. Criptografa a senha escolhida pelo usuário
+    const senhaHash = await bcrypt.hash(senhaLimpa, 10);
+
+    // 4. Insere o Gerente com os dados fornecidos
     await pool.execute(
       'INSERT INTO usuarios (nome, email, senha, perfil, ativo) VALUES (?, ?, ?, ?, ?)',
-      ['Matheus Master', 'matheus@ms2.com', senhaHash, 'GERENTE', true]
+      [nome, email, senhaHash, 'GERENTE', true]
     );
 
     return res.status(201).json({ 
-      message: '✅ Usuário Gerente criado com sucesso! Email: matheus@ms2.com | Senha: 123' 
+      message: `✅ Usuário Gerente (${email}) criado com sucesso!` 
     });
   } catch (error) {
     console.error(error);

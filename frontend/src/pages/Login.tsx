@@ -7,6 +7,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
+  const [sucesso, setSucesso] = useState("");
   const [carregando, setCarregando] = useState(false);
 
   async function entrar(e: FormEvent) {
@@ -14,11 +15,13 @@ export default function Login() {
 
     if (!email.trim() || !senha.trim()) {
       setErro("Preencha e-mail e senha para entrar.");
+      setSucesso("");
       return;
     }
 
     setCarregando(true);
     setErro("");
+    setSucesso("");
 
     try {
       const resposta = await login(email.trim(), senha);
@@ -33,14 +36,45 @@ export default function Login() {
   }
 
   async function handleSeed() {
+    if (!email.trim() || !senha.trim()) {
+      setErro(
+        "Preencha E-mail e Senha nos campos acima para criar a conta inicial.",
+      );
+      setSucesso("");
+      return;
+    }
+
+    setErro("");
+    setSucesso("");
+    setCarregando(true);
+
     try {
       const response = await fetch("http://localhost:3000/api/usuarios/seed", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nome: "Gerente Principal",
+          email: email.trim(),
+          senha: senha,
+        }),
       });
       const data = await response.json();
-      alert(data.message || data.error);
-    } catch {
-      alert("Erro ao conectar com o servidor para criar o usuário inicial.");
+
+      if (response.ok) {
+        setSucesso(data.message || "Usuário inicial criado com sucesso!");
+      } else {
+        setErro(
+          data.message ||
+            data.error ||
+            "Não foi possível criar o usuário inicial.",
+        );
+      }
+    } catch (error) {
+      setErro("Erro ao conectar com o servidor para criar o usuário inicial.");
+    } finally {
+      setCarregando(false);
     }
   }
 
@@ -71,13 +105,35 @@ export default function Login() {
 
         {erro && <p className="erro">{erro}</p>}
 
-        <button type="submit" className="btn btn-primario" disabled={carregando}>
+        {sucesso && (
+          <p
+            style={{
+              color: "#15803d",
+              backgroundColor: "#f0fdf4",
+              border: "1px solid #bbf7d0",
+              padding: "10px",
+              borderRadius: "6px",
+              fontSize: "13px",
+              textAlign: "center",
+              margin: "10px 0",
+            }}
+          >
+            {sucesso}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          className="btn btn-primario"
+          disabled={carregando}
+        >
           {carregando ? "Entrando..." : "Entrar"}
         </button>
 
         <button
           type="button"
           onClick={handleSeed}
+          disabled={carregando}
           style={{
             marginTop: "12px",
             background: "none",
