@@ -112,7 +112,11 @@ export default function Usuarios() {
       <section className="card">
         <h2>Novo usuário</h2>
 
-        <form onSubmit={cadastrarUsuario} style={{ display: "grid", gap: 12, marginBottom: 20 }}>
+        <form
+          onSubmit={cadastrarUsuario}
+          autoComplete="off"
+          style={{ display: "grid", gap: 12, marginBottom: 20 }}
+        >
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12 }}>
             <label>
               Nome
@@ -120,6 +124,7 @@ export default function Usuarios() {
                 value={form.nome}
                 onChange={(event) => setForm((estado) => ({ ...estado, nome: event.target.value }))}
                 placeholder="Ex: João da Silva"
+                autoComplete="off"
               />
             </label>
 
@@ -130,6 +135,7 @@ export default function Usuarios() {
                 value={form.email}
                 onChange={(event) => setForm((estado) => ({ ...estado, email: event.target.value }))}
                 placeholder="Ex: joao@empresa.com"
+                autoComplete="off"
               />
             </label>
 
@@ -140,6 +146,7 @@ export default function Usuarios() {
                 value={form.senha}
                 onChange={(event) => setForm((estado) => ({ ...estado, senha: event.target.value }))}
                 placeholder="Digite a senha"
+                autoComplete="new-password"
               />
             </label>
 
@@ -199,8 +206,8 @@ export default function Usuarios() {
                           alignItems: "center",
                           padding: "8px 12px",
                           borderRadius: 6,
-                          background: "#f2f4f7",
-                          color: "#344054",
+                          background: "var(--fundo)",
+                          color: "var(--texto)",
                           fontWeight: 600,
                           width: "100%",
                           justifyContent: "center",
@@ -229,8 +236,8 @@ export default function Usuarios() {
                         display: "inline-flex",
                         padding: "4px 10px",
                         borderRadius: 999,
-                        background: usuario.ativo === false ? "#eef1f5" : "#e8f5ee",
-                        color: usuario.ativo === false ? "#475467" : "#027a48",
+                        background: usuario.ativo === false ? "var(--fundo)" : "rgba(34, 197, 94, 0.15)",
+                        color: usuario.ativo === false ? "var(--texto-suave)" : "#22c55e",
                         fontWeight: 600,
                       }}
                     >

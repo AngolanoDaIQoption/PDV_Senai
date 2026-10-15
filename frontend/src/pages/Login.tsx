@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/api";
 
@@ -9,6 +9,25 @@ export default function Login() {
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
   const [carregando, setCarregando] = useState(false);
+
+  // Estado e persistência do Modo Escuro no ecrã de Login
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    const temaSalvo = localStorage.getItem("tema");
+    if (temaSalvo) return temaSalvo === "dark";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
+
+  useEffect(() => {
+    if (isDark) {
+      document.body.classList.add("dark");
+      localStorage.setItem("tema", "dark");
+    } else {
+      document.body.classList.remove("dark");
+      localStorage.setItem("tema", "light");
+    }
+  }, [isDark]);
+
+  const toggleTheme = () => setIsDark((prev) => !prev);
 
   async function entrar(e: FormEvent) {
     e.preventDefault();
@@ -79,7 +98,20 @@ export default function Login() {
   }
 
   return (
-    <div className="login-tela">
+    <div className="login-tela" style={{ position: "relative" }}>
+      {/* Botão de Alternância de Tema no canto superior direito */}
+      <div style={{ position: "absolute", top: "20px", right: "20px" }}>
+        <button
+          type="button"
+          className="btn btn-secundario"
+          onClick={toggleTheme}
+          title={isDark ? "Mudar para Modo Claro" : "Mudar para Modo Escuro"}
+          style={{ padding: "6px 12px", fontSize: "0.85rem" }}
+        >
+          {isDark ? "☀️ Claro" : "🌙 Escuro"}
+        </button>
+      </div>
+
       <form className="card login-card" onSubmit={entrar}>
         <h1>MS² Vestuário</h1>
         <p className="texto-suave">Entre para abrir o caixa.</p>
@@ -108,9 +140,9 @@ export default function Login() {
         {sucesso && (
           <p
             style={{
-              color: "#15803d",
-              backgroundColor: "#f0fdf4",
-              border: "1px solid #bbf7d0",
+              color: isDark ? "#4ade80" : "#15803d",
+              backgroundColor: isDark ? "#064e3b" : "#f0fdf4",
+              border: `1px solid ${isDark ? "#059669" : "#bbf7d0"}`,
               padding: "10px",
               borderRadius: "6px",
               fontSize: "13px",
@@ -138,7 +170,7 @@ export default function Login() {
             marginTop: "12px",
             background: "none",
             border: "none",
-            color: "#64748b",
+            color: "var(--texto-suave)",
             fontSize: "12px",
             textDecoration: "underline",
             cursor: "pointer",
