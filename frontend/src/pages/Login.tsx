@@ -90,7 +90,7 @@ export default function Login() {
             "Não foi possível criar o usuário inicial.",
         );
       }
-    } catch (error) {
+    } catch {
       setErro("Erro ao conectar com o servidor para criar o usuário inicial.");
     } finally {
       setCarregando(false);
