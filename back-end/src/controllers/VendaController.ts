@@ -100,7 +100,7 @@ export class VendaController {
       const valor_total = (valor_subtotal_centavos - valor_desconto_centavos) / 100;
       let autorizado_por: number | null = null;
 
-      // Desconto acima de 10% exige gerente autenticado, não apenas um ID enviado pelo navegador.
+      // O gerente precisa provar que está autenticado; não confiamos só em um ID vindo do navegador.
       if (excedeLimiteDesconto) {
         if (operador.perfil === 'GERENTE') {
           autorizado_por = operador.id;

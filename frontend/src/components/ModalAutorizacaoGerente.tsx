@@ -14,6 +14,7 @@ export default function ModalAutorizacaoGerente({
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
 
+  // Enviamos as credenciais ao fluxo do caixa e mantemos o modal aberto se a validação falhar.
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setCarregando(true);

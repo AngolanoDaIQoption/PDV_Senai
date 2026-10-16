@@ -125,6 +125,7 @@ export default function PDV() {
     setBusca("");
   }
 
+  // Só limpamos o carrinho depois que a API confirma a gravação da venda e a baixa do estoque.
   async function executarFinalizacao(tokenGerente?: string): Promise<boolean> {
     setSalvando(true);
     setMensagemErro("");
@@ -187,6 +188,7 @@ export default function PDV() {
   }
 
   async function onAutorizarGerente(email: string, senha: string) {
+    // Validamos a conta do gerente e usamos o token dela para autorizar o desconto no servidor.
     const resposta = await login(email, senha);
     if (resposta.usuario.perfil !== "GERENTE") {
       throw new Error("A conta informada não tem perfil de gerente.");
