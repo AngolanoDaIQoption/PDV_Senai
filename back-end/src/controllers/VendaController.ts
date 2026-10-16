@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { ResultSetHeader } from 'mysql2/promise';
+import jwt from 'jsonwebtoken';
 import pool from '../config/db';
 import { ProdutoModel } from '../models/Produto.model';
 import { UsuarioModel } from '../models/Usuario.model';
@@ -7,77 +8,146 @@ import { ItemVendaModel } from '../models/ItemVenda.model';
 import { VendaModel } from '../models/Venda.model';
 import { IVendaInput } from '../routes/types';
 
+class VendaRequestError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly code?: string,
+  ) {
+    super(message);
+  }
+}
+
 export class VendaController {
   static async create(req: Request, res: Response): Promise<Response> {
-    // Iniciamos uma conexão dedicada para a Transação SQL (RNF04)
+    // Uma conexão dedicada garante que venda, itens e estoque usem a mesma transação.
     const connection = await pool.getConnection();
     
     try {
-      const { cliente_id, usuario_id, autorizado_por, percentual_desconto = 0, forma_pagamento, itens } = req.body as IVendaInput;
+      const { cliente_id, valor_desconto = 0, forma_pagamento, itens } = req.body as IVendaInput;
+      const usuario_id = req.usuario?.id;
 
-      // RN10: Venda deve ter itens
-      if (!itens || itens.length === 0) {
+      if (!usuario_id) {
+        return res.status(401).json({ error: 'Usuário não autenticado.' });
+      }
+
+      // Uma venda sem itens não representa uma compra válida.
+      if (!Array.isArray(itens) || itens.length === 0) {
         return res.status(400).json({ error: 'A venda deve conter pelo menos um item.' });
       }
 
-      // Valida o operador do caixa
+      if (!Number.isFinite(valor_desconto) || valor_desconto < 0) {
+        return res.status(400).json({ error: 'O valor do desconto deve ser zero ou maior.' });
+      }
+
+      if (itens.some((item) =>
+        !Number.isInteger(item.produto_id) ||
+        item.produto_id <= 0 ||
+        !Number.isInteger(item.quantidade) ||
+        item.quantidade <= 0
+      )) {
+        return res.status(400).json({ error: 'Cada item precisa de um produto válido e uma quantidade inteira maior que zero.' });
+      }
+
+      // Confirmamos que quem está registrando a venda ainda é um operador ativo.
       const operador = await UsuarioModel.findById(usuario_id);
       if (!operador || !operador.ativo) {
         return res.status(400).json({ error: 'Operador inválido ou inativo.' });
       }
 
-      // RN04 e RN09: Alçada de desconto acima de 10%
-      if (percentual_desconto > 10) {
-        if (!autorizado_por) {
-          return res.status(403).json({ error: 'Descontos acima de 10% exigem ID de autorização do gerente.' });
-        }
-        const gerente = await UsuarioModel.findById(autorizado_por);
-        if (!gerente || gerente.perfil !== 'GERENTE' || !gerente.ativo) {
-          return res.status(403).json({ error: 'Autorizador inválido. Deve ser um Gerente ativo.' });
-        }
-      }
-
-      // Inicia a transação no banco de dados
+      // A partir daqui, qualquer falha permite desfazer todas as alterações juntas.
       await connection.beginTransaction();
 
-      let valor_subtotal = 0;
+      let valor_subtotal_centavos = 0;
       const itensProcessados = [];
 
-      // Processa cada item enviado (RN03, RN06, RN11)
+      // O preço e o estoque são conferidos no servidor, não confiamos nos valores do navegador.
       for (const item of itens) {
         const produto = await ProdutoModel.findById(item.produto_id, connection);
         
         if (!produto || !produto.ativo) {
           throw new Error(`Produto ID ${item.produto_id} não encontrado ou inativo.`);
         }
-        if (produto.estoque < item.quantidade) { // RN03: Bloqueia sem estoque
+        if (produto.estoque < item.quantidade) { // Não deixamos a venda passar do estoque disponível.
           throw new Error(`Estoque insuficiente para o produto: ${produto.descricao}. Disponível: ${produto.estoque}`);
         }
 
-        const subtotal_item = produto.preco * item.quantidade;
-        valor_subtotal += subtotal_item;
+        const preco_unitario_centavos = Math.round(produto.preco * 100);
+        const subtotal_item_centavos = preco_unitario_centavos * item.quantidade;
+        valor_subtotal_centavos += subtotal_item_centavos;
 
         itensProcessados.push({
           produto_id: produto.id,
           quantidade: item.quantidade,
-          preco_unitario: produto.preco, // RN06: Grava o preço atual histórico
-          subtotal: subtotal_item
+          preco_unitario: preco_unitario_centavos / 100, // Guardamos o preço de hoje para preservar o histórico da venda.
+          subtotal: subtotal_item_centavos / 100
         });
       }
 
-      // RN11: Consistência matemática
-      const valor_desconto = (valor_subtotal * percentual_desconto) / 100;
-      const valor_total = valor_subtotal - valor_desconto;
+      const valor_desconto_centavos = Math.round(valor_desconto * 100);
+      if (valor_desconto_centavos > valor_subtotal_centavos) {
+        throw new VendaRequestError('O desconto não pode ser maior que o subtotal.', 400);
+      }
 
-      // Insere o cabeçalho da Venda usando a conexão transacional
+      // O servidor calcula o percentual real usando os preços atuais do banco.
+      const percentual_desconto = valor_subtotal_centavos > 0
+        ? Math.round((valor_desconto_centavos / valor_subtotal_centavos) * 10000) / 100
+        : 0;
+      const excedeLimiteDesconto = valor_subtotal_centavos > 0 &&
+        valor_desconto_centavos * 100 > valor_subtotal_centavos * 10;
+      const valor_subtotal = valor_subtotal_centavos / 100;
+      const valor_desconto_final = valor_desconto_centavos / 100;
+      const valor_total = (valor_subtotal_centavos - valor_desconto_centavos) / 100;
+      let autorizado_por: number | null = null;
+
+      // Desconto acima de 10% exige gerente autenticado, não apenas um ID enviado pelo navegador.
+      if (excedeLimiteDesconto) {
+        if (operador.perfil === 'GERENTE') {
+          autorizado_por = operador.id;
+        } else {
+          const cabecalho = req.header('X-Gerente-Authorization') || '';
+          const tokenGerente = cabecalho.startsWith('Bearer ') ? cabecalho.slice(7) : '';
+          if (!tokenGerente) {
+            throw new VendaRequestError(
+              'Descontos acima de 10% exigem autorização de um gerente.',
+              403,
+              'MANAGER_AUTH_REQUIRED',
+            );
+          }
+
+          let payload: jwt.JwtPayload;
+          try {
+            const verificado = jwt.verify(tokenGerente, process.env.JWT_SECRET || 'pdv_dev_secret');
+            if (typeof verificado === 'string') {
+              throw new VendaRequestError('Token de autorização inválido.', 403);
+            }
+            payload = verificado;
+          } catch (error) {
+            if (error instanceof VendaRequestError) throw error;
+            throw new VendaRequestError('Token de autorização inválido ou expirado.', 403);
+          }
+
+          if (typeof payload.id !== 'number' || payload.perfil !== 'GERENTE') {
+            throw new VendaRequestError('A autorização deve ser feita por um gerente.', 403);
+          }
+
+          const gerente = await UsuarioModel.findById(payload.id);
+          if (!gerente || gerente.perfil !== 'GERENTE' || !gerente.ativo) {
+            throw new VendaRequestError('O gerente autorizador não está ativo.', 403);
+          }
+          autorizado_por = gerente.id;
+        }
+      }
+
+      // Primeiro gravamos o resumo da compra para obter seu ID.
       const [vendaResult] = await connection.execute<ResultSetHeader>(
         `INSERT INTO vendas (cliente_id, usuario_id, autorizado_por, valor_subtotal, percentual_desconto, valor_desconto, valor_total, forma_pagamento) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [cliente_id || null, usuario_id, autorizado_por || null, valor_subtotal, percentual_desconto, valor_desconto, valor_total, forma_pagamento]
+        [cliente_id || null, usuario_id, autorizado_por, valor_subtotal, percentual_desconto, valor_desconto_final, valor_total, forma_pagamento]
       );
       const venda_id = vendaResult.insertId;
 
-      // Insere os Itens e abate o Estoque (RN07)
+      // Depois registramos cada item e descontamos sua quantidade do estoque.
       for (const item of itensProcessados) {
         await ItemVendaModel.create({
           venda_id,
@@ -87,26 +157,35 @@ export class VendaController {
           subtotal: item.subtotal
         }, connection);
 
-        // O delta é negativo para baixar o estoque na venda
-        await ProdutoModel.updateEstoque(item.produto_id, -item.quantidade, connection);
+        const estoqueAtualizado = await ProdutoModel.updateEstoque(
+          item.produto_id,
+          -item.quantidade,
+          connection,
+        );
+        if (!estoqueAtualizado) {
+          throw new Error(`Não foi possível atualizar o estoque do produto ID ${item.produto_id}.`);
+        }
       }
 
-      // Se tudo correu bem, consolida a transação
+      // Só confirmamos quando o resumo, os itens e o estoque foram atualizados com sucesso.
       await connection.commit();
       return res.status(201).json({ message: 'Venda finalizada com sucesso!', venda_id, valor_total });
 
-    } catch (error: any) {
-      // Se houver qualquer erro (ex: falta de estoque), desfaz TUDO
+    } catch (error: unknown) {
+      // Se algo falhou no meio do processo, o banco volta ao estado anterior.
       await connection.rollback();
       console.error(error);
-      return res.status(400).json({ error: error.message || 'Erro ao processar venda.' });
+      const status = error instanceof VendaRequestError ? error.status : 400;
+      const code = error instanceof VendaRequestError ? error.code : undefined;
+      const message = error instanceof Error ? error.message : 'Erro ao processar venda.';
+      return res.status(status).json({ error: message, ...(code ? { code } : {}) });
     } finally {
-      // Liberta a conexão de volta para a pool
+      // A conexão volta para a pool tanto em caso de sucesso quanto de erro.
       connection.release();
     }
   }
 
-  // RF11 / RF06: Consulta e histórico de vendas para o Gerente
+  // O modelo monta o histórico e aplica os filtros pedidos pelo gerente.
   static async listarTodas(req: Request, res: Response): Promise<Response> {
     try {
       const { data, cliente, operador } = req.query as {

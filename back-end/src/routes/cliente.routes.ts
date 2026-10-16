@@ -4,16 +4,17 @@ import { autenticarToken, autorizarPerfil } from '../middlewares/auth.middleware
 
 const clienteRoutes = Router();
 
-// Endpoint para listar todos (CAIXA, SUPERVISOR e GERENTE)
+// As permissões ficam junto às rotas, antes de a requisição chegar ao controlador.
+// A listagem aceita os três perfis; as demais operações são mais restritas.
 clienteRoutes.get('/', autenticarToken, autorizarPerfil(['CAIXA', 'SUPERVISOR', 'GERENTE']), ClienteController.findAll);
 
-// Endpoint para buscar por ID (CAIXA e GERENTE)
+// A busca individual fica disponível para caixa e gerente.
 clienteRoutes.get('/:id', autenticarToken, autorizarPerfil(['CAIXA', 'GERENTE']), ClienteController.findById);
 
-// Endpoint para cadastrar (CAIXA e GERENTE)
+// Caixa e gerente também podem cadastrar clientes.
 clienteRoutes.post('/', autenticarToken, autorizarPerfil(['CAIXA', 'GERENTE']), ClienteController.create);
 
-// Endpoint para editar (CAIXA e GERENTE)
+// A edição segue a mesma permissão do cadastro.
 clienteRoutes.put('/:id', autenticarToken, autorizarPerfil(['CAIXA', 'GERENTE']), ClienteController.update);
 
 export default clienteRoutes;

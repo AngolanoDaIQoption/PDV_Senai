@@ -1,25 +1,31 @@
 import { useState, type FormEvent } from "react";
 
 interface ModalAutorizacaoGerenteProps {
-  aberto: boolean;
   onFechar: () => void;
-  onAutorizar: () => void;
+  onAutorizar: (email: string, senha: string) => Promise<void>;
 }
 
 export default function ModalAutorizacaoGerente({
-  aberto,
   onFechar,
   onAutorizar,
 }: ModalAutorizacaoGerenteProps) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [erro, setErro] = useState("");
+  const [carregando, setCarregando] = useState(false);
 
-  if (!aberto) return null;
-
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    // TODO Sprint 5: validar credenciais do gerente com a API (ex: POST /auth/validar-gerente)
-    onAutorizar();
+    setCarregando(true);
+    setErro("");
+
+    try {
+      await onAutorizar(email.trim(), senha);
+    } catch (error) {
+      setErro(error instanceof Error ? error.message : "Não foi possível autorizar a venda.");
+    } finally {
+      setCarregando(false);
+    }
   }
 
   return (
@@ -54,6 +60,7 @@ export default function ModalAutorizacaoGerente({
               placeholder="gerente@loja.com"
               required
               autoFocus
+              disabled={carregando}
             />
           </label>
 
@@ -65,15 +72,18 @@ export default function ModalAutorizacaoGerente({
               onChange={(e) => setSenha(e.target.value)}
               placeholder="••••••••"
               required
+              disabled={carregando}
             />
           </label>
 
+          {erro && <p className="erro">{erro}</p>}
+
           <div className="linha" style={{ justifyContent: "flex-end", marginTop: "8px" }}>
-            <button type="button" className="btn btn-secundario" onClick={onFechar}>
+            <button type="button" className="btn btn-secundario" onClick={onFechar} disabled={carregando}>
               Cancelar
             </button>
-            <button type="submit" className="btn btn-primario">
-              Autorizar
+            <button type="submit" className="btn btn-primario" disabled={carregando}>
+              {carregando ? "Validando..." : "Autorizar"}
             </button>
           </div>
         </form>
@@ -81,4 +91,3 @@ export default function ModalAutorizacaoGerente({
     </div>
   );
 }
-

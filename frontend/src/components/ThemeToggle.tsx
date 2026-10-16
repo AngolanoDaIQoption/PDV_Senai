@@ -1,5 +1,6 @@
 import { useTheme } from "../utils/useTheme";
 
+// Este botão só apresenta a opção; o hook cuida de guardar e aplicar o tema escolhido.
 export default function ThemeToggle() {
   const { isDark, toggleTheme } = useTheme();
 

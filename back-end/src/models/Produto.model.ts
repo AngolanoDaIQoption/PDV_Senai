@@ -5,6 +5,7 @@ import { IProduto, IProdutoInput, IProdutoUpdate } from '../routes/types';
 const COLS = 'id, codigo_barras, descricao, preco, estoque, ativo, criado_em';
 const CAMPOS = ['codigo_barras', 'descricao', 'preco', 'estoque', 'ativo'];
 
+// As operações de produto ficam aqui para que controladores não precisem escrever SQL.
 export class ProdutoModel {
   static async create(d: IProdutoInput): Promise<number> {
     const [r] = await pool.execute<ResultSetHeader>(
@@ -13,6 +14,7 @@ export class ProdutoModel {
     return r.insertId;
   }
   static async findById(id: number, connection?: PoolConnection): Promise<IProduto | null> {
+    // Aceita uma conexão externa para consultar o produto dentro da transação da venda.
     const [rows] = await (connection || pool).execute<RowDataPacket[]>(`SELECT ${COLS} FROM produtos WHERE id = ?`, [id]);
     return (rows[0] as IProduto) ?? null;
   }
@@ -20,7 +22,7 @@ export class ProdutoModel {
     const [rows] = await pool.execute<RowDataPacket[]>(`SELECT ${COLS} FROM produtos WHERE codigo_barras = ?`, [codigo]);
     return (rows[0] as IProduto) ?? null;
   }
-  // RF04: busca por nome/descrição ou código (só produtos ativos)
+  // No caixa só aparecem produtos ativos, encontrados pelo código ou pela descrição.
   static async buscar(termo: string): Promise<IProduto[]> {
     const like = `%${termo}%`;
     const [rows] = await pool.execute<RowDataPacket[]>(
@@ -41,8 +43,9 @@ export class ProdutoModel {
       [...campos.map(c => (d as any)[c]), id]);
     return r.affectedRows > 0;
   }
-  // delta positivo = entrada, negativo = saída; não deixa o estoque ficar negativo
+  // Um delta positivo repõe estoque e um negativo representa saída; o saldo não pode ficar abaixo de zero.
   static async updateEstoque(id: number, delta: number, connection?: PoolConnection): Promise<boolean> {
+    // A conexão opcional permite que a baixa seja confirmada junto com o restante da venda.
     const [r] = await (connection || pool).execute<ResultSetHeader>(
       'UPDATE produtos SET estoque = estoque + ? WHERE id = ? AND (estoque + ?) >= 0', [delta, id, delta]);
     return r.affectedRows > 0;

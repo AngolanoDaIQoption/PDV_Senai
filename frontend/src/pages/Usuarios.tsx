@@ -10,6 +10,7 @@ const formularioInicial = {
   perfil: "CAIXA" as Perfil,
 };
 
+// A gestão de contas é reservada ao gerente; aqui ele cadastra usuários e ajusta seus acessos.
 export default function Usuarios() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -52,6 +53,7 @@ export default function Usuarios() {
   }
 
   async function alternarAtivo(usuario: Usuario) {
+    // Mantemos a proteção também na interface, além da regra que existe no servidor.
     if (usuario.perfil === "GERENTE") {
       setErro("O perfil de gerente não pode ser inativado.");
       return;
@@ -76,6 +78,7 @@ export default function Usuarios() {
   async function cadastrarUsuario(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    // Removemos espaços acidentais antes de enviar os dados para a API.
     const nome = form.nome.trim();
     const email = form.email.trim();
     const senha = form.senha.trim();

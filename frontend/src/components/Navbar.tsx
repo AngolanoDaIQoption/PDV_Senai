@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import type { Usuario } from "../types";
 
+// O menu mostra as áreas permitidas para o perfil salvo no login.
 export default function Navbar() {
   const navigate = useNavigate();
   const usuario: Usuario | null = JSON.parse(localStorage.getItem("usuario") ?? "null");
@@ -31,6 +32,7 @@ export default function Navbar() {
   const podeGerenciarUsuarios = usuario?.perfil === "GERENTE";
 
   function sair() {
+    // Encerrar a sessão remove os dados locais e leva de volta à tela de entrada.
     localStorage.removeItem("token");
     localStorage.removeItem("usuario");
     navigate("/login");

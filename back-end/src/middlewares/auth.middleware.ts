@@ -15,9 +15,7 @@ declare global {
   }
 }
 
-/**
- * Middleware para validar o JWT no cabeçalho Authorization
- */
+// Confere o token Bearer antes de deixar o pedido seguir para a rota protegida.
 export function autenticarToken(req: Request, res: Response, next: NextFunction): void | Response {
   const authHeader = req.headers.authorization || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
@@ -39,9 +37,7 @@ export function autenticarToken(req: Request, res: Response, next: NextFunction)
   }
 }
 
-/**
- * Middleware para validar o perfil do usuário autenticado
- */
+// Depois da autenticação, esta etapa verifica se o perfil pode executar aquela ação.
 export function autorizarPerfil(perfisPermitidos: Perfil[]) {
   return (req: Request, res: Response, next: NextFunction): void | Response => {
     if (!req.usuario) {
@@ -55,4 +51,3 @@ export function autorizarPerfil(perfisPermitidos: Perfil[]) {
     return next();
   };
 }
-

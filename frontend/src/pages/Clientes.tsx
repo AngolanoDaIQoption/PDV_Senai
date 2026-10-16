@@ -5,6 +5,7 @@ import { mascararCpf, mascararTelefone, validarCpf } from "../utils/format";
 
 const formVazio = { nome: "", cpf: "", telefone: "", email: "" };
 
+// Esta tela concentra o cadastro, a edição e a consulta dos clientes da loja.
 export default function Clientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [form, setForm] = useState(formVazio);
@@ -43,6 +44,7 @@ export default function Clientes() {
   }, []);
 
   function atualizar(campo: keyof typeof formVazio, valor: string) {
+    // Atualiza só o campo digitado, mantendo o restante do formulário como está.
     setForm((f) => ({ ...f, [campo]: valor }));
   }
 
@@ -55,6 +57,7 @@ export default function Clientes() {
   async function salvar(e: FormEvent) {
     e.preventDefault();
 
+    // Conferimos os dados no navegador para orientar o usuário antes da chamada à API.
     const nome = form.nome.trim();
     const cpfLimpo = form.cpf.replace(/\D/g, "");
 
@@ -101,6 +104,7 @@ export default function Clientes() {
   }
 
   function editar(c: Cliente) {
+    // Preenche o mesmo formulário com os dados existentes; o CPF permanece bloqueado.
     setEditandoId(c.id);
     setErro("");
     setForm({
@@ -112,6 +116,7 @@ export default function Clientes() {
   }
 
   function alternarAtivo(cliente: Cliente) {
+    // Este controle ainda altera apenas a tela; não há operação de ativação de cliente na API.
     if (!ehGerente) {
       setErro("Apenas o gerente pode inativar clientes.");
       return;

@@ -5,6 +5,7 @@ import { ICliente, IClienteInput, IClienteUpdate } from '../routes/types';
 const COLS = 'id, nome, cpf, telefone, email, criado_em';
 const CAMPOS = ['nome', 'cpf', 'telefone', 'email'];
 
+// Este modelo concentra as consultas de clientes; os controladores cuidam das regras e respostas HTTP.
 export class ClienteModel {
   static async create(d: IClienteInput): Promise<number> {
     const [r] = await pool.execute<ResultSetHeader>(
@@ -25,6 +26,7 @@ export class ClienteModel {
     return rows as ICliente[];
   }
   static async update(id: number, d: IClienteUpdate): Promise<boolean> {
+    // Atualizamos só os campos recebidos e permitidos, sem montar valores direto na consulta.
     const campos = CAMPOS.filter(c => (d as any)[c] !== undefined);
     if (!campos.length) return false;
     const [r] = await pool.execute<ResultSetHeader>(

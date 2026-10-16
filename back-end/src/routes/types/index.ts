@@ -1,3 +1,4 @@
+// Tipos compartilhados pelas rotas, controladores e modelos da API.
 export type Perfil = 'CAIXA' | 'SUPERVISOR' | 'GERENTE';
 export interface IUsuario { id: number; nome: string; email: string; senha?: string; perfil: Perfil; ativo: boolean; criado_em?: Date }
 export type IUsuarioInput = { nome: string; email: string; senha: string; perfil: Perfil; ativo?: boolean };
@@ -23,7 +24,7 @@ export interface IVenda {
   motivo_cancelamento?: string | null; cancelado_por?: number | null; cancelado_em?: Date | null; data_venda?: Date;
 }
 export interface IVendaInput {
-  cliente_id?: number | null; usuario_id: number; autorizado_por?: number | null;
-  percentual_desconto?: number; forma_pagamento: FormaPagamento; itens: IItemVendaInput[];
+  cliente_id?: number | null;
+  valor_desconto?: number; forma_pagamento: FormaPagamento; itens: IItemVendaInput[];
 }
 export interface IVendaCompleta extends IVenda { cliente_nome?: string | null; usuario_nome?: string; itens: IItemVenda[] }

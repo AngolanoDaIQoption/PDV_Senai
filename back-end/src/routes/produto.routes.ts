@@ -4,10 +4,10 @@ import { autenticarToken, autorizarPerfil } from '../middlewares/auth.middleware
 
 const produtoRoutes = Router();
 
-// Endpoint para buscar (aberto para todos autenticados)
+// A busca é aberta; alterações no catálogo ficam para supervisor e gerente.
 produtoRoutes.get('/', ProdutoController.listar);
 
-// Endpoints de escrita: GERENTE e SUPERVISOR podem criar, editar e inativar/ativar
+// Só supervisor e gerente podem alterar o catálogo.
 produtoRoutes.post('/', autenticarToken, autorizarPerfil(['GERENTE', 'SUPERVISOR']), ProdutoController.create);
 produtoRoutes.put('/:id', autenticarToken, autorizarPerfil(['GERENTE', 'SUPERVISOR']), ProdutoController.update);
 produtoRoutes.patch('/:id/inativar', autenticarToken, autorizarPerfil(['GERENTE', 'SUPERVISOR']), ProdutoController.inativar);

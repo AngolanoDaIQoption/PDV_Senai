@@ -1,14 +1,36 @@
-import type { Cliente, Perfil, Produto, Usuario, VendaHistorico } from "../types";
+import type { Cliente, FormaPagamento, Perfil, Produto, Usuario, VendaHistorico } from "../types";
 
 const API_URL = "http://localhost:3000/api";
 
+// O logout é compartilhado pelo tratamento de sessão e remove os dados do navegador.
 export function logout() {
   localStorage.removeItem("token");
   localStorage.removeItem("usuario");
   window.location.href = "/login";
 }
 
-async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+export class ApiError extends Error {
+  readonly status: number;
+  readonly code?: string;
+
+  constructor(
+    message: string,
+    status: number,
+    code?: string,
+  ) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
+async function apiFetch<T>(
+  path: string,
+  options: RequestInit = {},
+  logoutOnUnauthorized = true,
+): Promise<T> {
+  // Centralizamos aqui o token, os cabeçalhos e as mensagens de erro da comunicação com a API.
   const token = localStorage.getItem("token");
   const headers = new Headers(options.headers);
 
@@ -26,13 +48,26 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
   });
 
   if (response.status === 401) {
-    logout();
-    throw new Error("Sessão expirada. Faça login novamente.");
+    if (logoutOnUnauthorized) {
+      logout();
+      throw new Error("Sessão expirada. Faça login novamente.");
+    }
+
+    const erro = await response.json().catch(() => ({}));
+    throw new ApiError(
+      (erro as { error?: string }).error ?? "Credenciais inválidas.",
+      response.status,
+    );
   }
 
   if (!response.ok) {
     const erro = await response.json().catch(() => ({}));
-    throw new Error((erro as { error?: string }).error ?? "Erro na requisição.");
+    const detalhes = erro as { error?: string; code?: string };
+    throw new ApiError(
+      detalhes.error ?? "Erro na requisição.",
+      response.status,
+      detalhes.code,
+    );
   }
 
   return response.json() as Promise<T>;
@@ -47,6 +82,35 @@ export async function login(email: string, senha: string): Promise<LoginResponse
   return apiFetch<LoginResponse>("/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, senha }),
+  }, false);
+}
+
+export interface CriarVendaInput {
+  cliente_id?: number | null;
+  valor_desconto: number;
+  forma_pagamento: FormaPagamento;
+  itens: Array<{ produto_id: number; quantidade: number }>;
+}
+
+export interface CriarVendaResponse {
+  message: string;
+  venda_id: number;
+  valor_total: number;
+}
+
+export async function criarVenda(
+  venda: CriarVendaInput,
+  tokenGerente?: string,
+): Promise<CriarVendaResponse> {
+  const headers = new Headers();
+  if (tokenGerente) {
+    headers.set("X-Gerente-Authorization", `Bearer ${tokenGerente}`);
+  }
+
+  return apiFetch<CriarVendaResponse>("/vendas", {
+    method: "POST",
+    headers,
+    body: JSON.stringify(venda),
   });
 }
 
@@ -69,6 +133,7 @@ interface ClienteApi {
 }
 
 function normalizarProduto(item: ProdutoApi): Produto {
+  // A API e a interface usam alguns nomes diferentes; adaptamos o formato numa única passagem.
   return {
     id: item.id,
     codigo: String(item.codigo_barras ?? item.codigo ?? ""),
@@ -90,6 +155,7 @@ function normalizarCliente(item: ClienteApi): Cliente {
 }
 
 export async function buscarProdutos(todos = false): Promise<Produto[]> {
+  // A opção "todos" também inclui os inativos, necessários na tela de gestão do catálogo.
   const caminho = todos ? "/produtos?todos=true" : "/produtos";
   const dados = await apiFetch<ProdutoApi[]>(caminho);
   return Array.isArray(dados) ? dados.map(normalizarProduto) : [];

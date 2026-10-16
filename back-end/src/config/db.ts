@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// A pool reaproveita conexões com o MySQL, em vez de abrir uma nova a cada consulta.
 export const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   port: Number(process.env.DB_PORT) || 3306,
@@ -15,9 +16,7 @@ export const pool = mysql.createPool({
   decimalNumbers: true // Retorna campos DECIMAL como number em vez de string
 });
 
-/**
- * Função utilitária para testar a conectividade com o banco de dados na inicialização
- */
+// Usamos este teste na inicialização para perceber logo se a conexão com o banco falhou.
 export async function testConnection(): Promise<void> {
   try {
     const connection = await pool.getConnection();
@@ -29,4 +28,3 @@ export async function testConnection(): Promise<void> {
 }
 
 export default pool;
-

@@ -10,7 +10,8 @@ export function validarCpf(cpf: string): boolean {
     return false;
   }
 
-  // Primeiro dígito verificador
+  // O CPF só é aceito depois de conferir os dois dígitos verificadores.
+  // Começamos calculando o primeiro dígito a partir dos nove números iniciais.
   let soma = 0;
   for (let i = 0; i < 9; i += 1) {
     soma += Number(digitos[i]) * (10 - i);
@@ -22,7 +23,7 @@ export function validarCpf(cpf: string): boolean {
     return false;
   }
 
-  // Segundo dígito verificador
+  // O segundo cálculo usa os nove números e o primeiro dígito já conferido.
   soma = 0;
   for (let i = 0; i < 10; i += 1) {
     soma += Number(digitos[i]) * (11 - i);

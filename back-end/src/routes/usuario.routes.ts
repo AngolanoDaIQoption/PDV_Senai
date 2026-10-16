@@ -6,24 +6,24 @@ import pool from '../config/db';
 
 const usuarioRoutes = Router();
 
-// Endpoint de Seed (Público para setup inicial)
+// No primeiro uso, este endpoint cria um gerente somente se ainda não houver usuários.
 usuarioRoutes.post('/seed', async (req, res): Promise<any> => {
   try {
-    // 1. Verifica se já existem utilizadores registados
+    // Assim evitamos que a rota de configuração inicial crie outros gerentes depois.
     const [linhas]: any = await pool.execute('SELECT id FROM usuarios');
     if (linhas.length > 0) {
       return res.status(400).json({ message: 'O banco de dados já possui usuários cadastrados!' });
     }
 
-    // 2. Extrai os dados digitados pelo usuário (ou usa valores padrão caso estejam vazios)
+    // A tela pode fornecer os dados; os valores padrão ajudam na configuração local.
     const email = req.body.email?.trim() || 'gerente@ms2.com';
     const senhaLimpa = req.body.senha || '123456';
     const nome = req.body.nome || 'Gerente Principal';
 
-    // 3. Criptografa a senha escolhida pelo usuário
+    // Mesmo no cadastro inicial, a senha não é salva em texto aberto.
     const senhaHash = await bcrypt.hash(senhaLimpa, 10);
 
-    // 4. Insere o Gerente com os dados fornecidos
+    // A primeira conta recebe o perfil com maior permissão para configurar o sistema.
     await pool.execute(
       'INSERT INTO usuarios (nome, email, senha, perfil, ativo) VALUES (?, ?, ?, ?, ?)',
       [nome, email, senhaHash, 'GERENTE', true]
@@ -38,10 +38,10 @@ usuarioRoutes.post('/seed', async (req, res): Promise<any> => {
   }
 });
 
-// Endpoint de login (público)
+// O login é público porque acontece antes de existir uma sessão autenticada.
 usuarioRoutes.post('/login', UsuarioController.login);
 
-// Endpoints de gestão (apenas GERENTE)
+// Depois do login, só o gerente administra as contas da equipe.
 usuarioRoutes.get('/', autenticarToken, autorizarPerfil(['GERENTE']), UsuarioController.listar);
 usuarioRoutes.post('/', autenticarToken, autorizarPerfil(['GERENTE']), UsuarioController.create);
 usuarioRoutes.put('/:id', autenticarToken, autorizarPerfil(['GERENTE']), UsuarioController.update);

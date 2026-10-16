@@ -29,6 +29,7 @@ export default function Login() {
 
   const toggleTheme = () => setIsDark((prev) => !prev);
 
+  // Pedimos um token à API e guardamos a sessão para as próximas telas.
   async function entrar(e: FormEvent) {
     e.preventDefault();
 
@@ -54,6 +55,7 @@ export default function Login() {
     }
   }
 
+  // O setup inicial só cria o primeiro gerente se a base ainda não tiver usuários.
   async function handleSeed() {
     if (!email.trim() || !senha.trim()) {
       setErro(

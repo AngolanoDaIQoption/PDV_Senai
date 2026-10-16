@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 
+// O hook mantém a escolha de tema sincronizada entre estado, página e próxima visita.
 export function useTheme() {
   const [isDark, setIsDark] = useState<boolean>(() => {
     const temaSalvo = localStorage.getItem("tema");

@@ -8,6 +8,7 @@ import Usuarios from "./pages/Usuarios.tsx";
 import ProtectedRoute from "./components/ProtectedRoute";
 import GerenteRoute from "./components/GerenteRoute";
 
+// Aqui definimos quais telas existem e agrupamos as que exigem login ou um perfil específico.
 export default function App() {
   return (
     <Routes>

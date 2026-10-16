@@ -26,6 +26,7 @@ function formatarDataHora(dataString?: string): string {
 }
 
 export default function Vendas() {
+  // O gerente consulta aqui as vendas e pode abrir os itens de cada compra.
   const [vendas, setVendas] = useState<VendaHistorico[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
@@ -34,6 +35,7 @@ export default function Vendas() {
   const [linhaExpandidaId, setLinhaExpandidaId] = useState<number | null>(null);
 
   useEffect(() => {
+    // Carregamos o histórico uma vez ao abrir a tela.
     buscarVendas()
       .then((dados) => {
         setVendas(dados);
@@ -52,6 +54,7 @@ export default function Vendas() {
     setLinhaExpandidaId((atual) => (atual === id ? null : id));
   }
 
+  // Cliente e data são filtros aplicados no navegador à lista já carregada.
   const termoCliente = buscaCliente.trim().toLowerCase();
   const vendasFiltradas = vendas.filter((v) => {
     const nomeCliente = (v.cliente_nome ?? "sem cliente").toLowerCase();
@@ -165,7 +168,7 @@ export default function Vendas() {
                       <div
                         style={{
                           padding: "14px 18px",
-                          background: "#fafbfc",
+                          background: "var(--fundo)",
                           borderTop: "1px dashed var(--borda)",
                         }}
                       >
@@ -207,7 +210,7 @@ export default function Vendas() {
                         </h4>
 
                         {v.itens && v.itens.length > 0 ? (
-                          <table style={{ margin: 0, background: "#fff", border: "1px solid var(--borda)" }}>
+                          <table style={{ margin: 0, background: "var(--superficie)", border: "1px solid var(--borda)" }}>
                             <thead>
                               <tr>
                                 <th>Produto</th>
@@ -252,4 +255,3 @@ export default function Vendas() {
     </div>
   );
 }
-

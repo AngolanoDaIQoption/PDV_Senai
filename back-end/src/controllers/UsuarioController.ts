@@ -5,7 +5,7 @@ import { UsuarioModel } from '../models/Usuario.model';
 import { IUsuarioInput } from '../routes/types';
 
 export class UsuarioController {
-  // RF02: Cadastrar usuário com senha encriptada
+  // Antes de guardar a conta, conferimos os dados e armazenamos apenas o hash da senha.
   static async create(req: Request, res: Response): Promise<Response> {
     try {
       const { nome, email, senha, perfil } = req.body as IUsuarioInput;
@@ -37,7 +37,7 @@ export class UsuarioController {
     }
   }
 
-  // RF01: Autenticação (Login)
+  // No login, comparamos a senha e devolvemos um token sem expor o hash armazenado.
   static async login(req: Request, res: Response): Promise<Response> {
     try {
       const { email, senha } = req.body;
@@ -75,7 +75,7 @@ export class UsuarioController {
     }
   }
 
-  // Listar todos os usuários (sem retornar senha)
+  // A consulta do modelo já deixa a senha de fora desta lista.
   static async listar(req: Request, res: Response): Promise<Response> {
     try {
       const usuarios = await UsuarioModel.findAll();
@@ -86,7 +86,7 @@ export class UsuarioController {
     }
   }
 
-  // Editar perfil e/ou status ativo de um usuário (apenas GERENTE)
+  // O gerente pode ajustar o perfil e o acesso, mas não pode rebaixar outro gerente.
   static async update(req: Request, res: Response): Promise<Response> {
     try {
       const id = Number(req.params.id);

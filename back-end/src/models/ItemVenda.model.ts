@@ -11,10 +11,7 @@ export interface IItemVendaInsert {
 }
 
 export class ItemVendaModel {
-  /**
-   * Insere um item associado a uma venda
-   * Suporta transação passando conexão
-   */
+  // Quando a venda está numa transação, usamos a conexão dela para gravar tudo junto.
   static async create(
     item: IItemVendaInsert,
     connection?: PoolConnection,
@@ -36,9 +33,7 @@ export class ItemVendaModel {
     return result.insertId;
   }
 
-  /**
-   * Busca todos os itens de uma venda específica, trazendo também o nome do produto
-   */
+  // O histórico mostra a descrição junto ao item, evitando que a tela precise fazer outra consulta.
   static async findByVendaId(
     vendaId: number,
     connection?: PoolConnection,

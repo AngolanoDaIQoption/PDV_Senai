@@ -10,6 +10,7 @@ const formVazio = {
   estoque: "",
 };
 
+// A tela permite consultar o catálogo e, para os perfis autorizados, mantê-lo atualizado.
 export default function Produtos() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [busca, setBusca] = useState("");
@@ -47,6 +48,7 @@ export default function Produtos() {
   }, []);
 
   function atualizar(campo: keyof typeof formVazio, valor: string) {
+    // Mantém os campos do formulário juntos em um único estado.
     setForm((f) => ({ ...f, [campo]: valor }));
   }
 
@@ -59,6 +61,7 @@ export default function Produtos() {
   async function salvar(e: FormEvent) {
     e.preventDefault();
 
+    // Os campos numéricos começam como texto no formulário e são convertidos antes de salvar.
     const codigo = form.codigo.trim();
     const descricao = form.descricao.trim();
     const precoNum = Number(form.preco.replace(",", "."));
@@ -141,6 +144,7 @@ export default function Produtos() {
   }
 
   function editar(p: Produto) {
+    // Reaproveitamos o formulário de cadastro para editar o produto escolhido.
     setEditandoId(p.id);
     setErro("");
     setForm({

@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import db from './src/config/db';
 
+// Este script cria uma conta gerente de demonstração se o banco ainda estiver vazio.
 async function criarPrimeiroGerente() {
   try {
     console.log('Iniciando o seeding do banco de dados...');
@@ -11,6 +12,7 @@ async function criarPrimeiroGerente() {
       process.exit(0);
     }
 
+    // O hash é o que fica armazenado no banco; a senha original não é gravada.
     const senhaHash = await bcrypt.hash('123', 10);
 
     await db.execute(

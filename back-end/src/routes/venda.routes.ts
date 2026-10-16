@@ -4,10 +4,10 @@ import { autenticarToken, autorizarPerfil } from '../middlewares/auth.middleware
 
 const vendaRoutes = Router();
 
-// Endpoint para registar uma nova venda no PDV (CAIXA e GERENTE)
+// Caixa e gerente podem registrar vendas; só o gerente consulta o histórico completo.
 vendaRoutes.post('/', autenticarToken, autorizarPerfil(['CAIXA', 'GERENTE']), VendaController.create);
 
-// Endpoint para consultar histórico de vendas (APENAS GERENTE)
+// O histórico completo fica restrito ao gerente.
 vendaRoutes.get('/', autenticarToken, autorizarPerfil(['GERENTE']), VendaController.listarTodas);
 
 export default vendaRoutes;

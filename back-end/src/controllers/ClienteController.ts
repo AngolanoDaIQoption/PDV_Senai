@@ -3,29 +3,28 @@ import { ClienteModel } from '../models/Cliente.model';
 import { IClienteInput, IClienteUpdate } from '../routes/types';
 
 export class ClienteController {
-  // RF05: Criar novo cliente
+  // Limpamos a formatação do CPF antes de conferir duplicidade e salvar.
   static async create(req: Request, res: Response): Promise<Response> {
     try {
       const { nome, cpf, telefone, email } = req.body as IClienteInput;
 
-      // Validação básica obrigatória
+      // Sem nome e CPF não há como identificar o cadastro.
       if (!nome || !cpf) {
         return res.status(400).json({ error: 'Nome e CPF são obrigatórios.' });
       }
 
-      // Validação de formato (só números e exatamente 11 dígitos)
+      // O banco guarda só os 11 números; pontos e traço são apenas apresentação.
       const cpfLimpo = cpf.replace(/\D/g, '');
       if (cpfLimpo.length !== 11) {
         return res.status(400).json({ error: 'O CPF deve ter 11 dígitos numéricos.' });
       }
 
-      // RN01: Bloqueio de CPF duplicado
+      // O CPF também funciona como identificador único para evitar cadastros repetidos.
       const clienteExistente = await ClienteModel.findByCpf(cpfLimpo);
       if (clienteExistente) {
         return res.status(409).json({ error: 'Já existe um cliente cadastrado com este CPF.' });
       }
 
-      // Inserção no banco
       const id = await ClienteModel.create({
         nome,
         cpf: cpfLimpo,
@@ -40,7 +39,7 @@ export class ClienteController {
     }
   }
 
-  // RF05: Consultar todos os clientes
+  // Estas ações de consulta e edição ligam as rotas aos métodos do modelo.
   static async findAll(req: Request, res: Response): Promise<Response> {
     try {
       const clientes = await ClienteModel.findAll();
@@ -51,7 +50,6 @@ export class ClienteController {
     }
   }
 
-  // RF05: Consultar cliente por ID
   static async findById(req: Request, res: Response): Promise<Response> {
     try {
       const id = Number(req.params.id);
@@ -68,13 +66,12 @@ export class ClienteController {
     }
   }
 
-  // RF05: Editar cliente
   static async update(req: Request, res: Response): Promise<Response> {
     try {
       const id = Number(req.params.id);
       const { nome, telefone, email } = req.body as IClienteUpdate;
 
-      // Impede a atualização do CPF para manter integridade das vendas passadas
+      // O CPF fica fixo depois do cadastro para não alterar a referência de vendas antigas.
       if (req.body.cpf) {
          return res.status(400).json({ error: 'O CPF não pode ser alterado após o cadastro.' });
       }

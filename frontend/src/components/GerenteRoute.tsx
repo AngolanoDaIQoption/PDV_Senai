@@ -5,6 +5,7 @@ interface GerenteRouteProps {
   perfisPermitidos?: Perfil[];
 }
 
+// Além de estar logado, o usuário precisa ter um dos perfis aceitos para ver a tela.
 export default function GerenteRoute({ perfisPermitidos = ["GERENTE"] }: GerenteRouteProps) {
   const usuarioRaw = localStorage.getItem("usuario");
   const usuario: Usuario | null = usuarioRaw ? JSON.parse(usuarioRaw) : null;
@@ -19,4 +20,3 @@ export default function GerenteRoute({ perfisPermitidos = ["GERENTE"] }: Gerente
 
   return <Outlet />;
 }
-

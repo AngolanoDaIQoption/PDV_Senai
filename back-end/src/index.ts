@@ -7,7 +7,6 @@ import usuarioRoutes from './routes/usuario.routes';
 import authRoutes from './routes/auth.routes';
 import vendaRoutes from './routes/venda.routes';
 
-// 1. Importar as rotas de clientes
 import clienteRoutes from './routes/cliente.routes';
 
 dotenv.config();
@@ -15,11 +14,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares globais
+// Aqui a API recebe as configurações comuns antes de encaminhar cada pedido.
 app.use(cors());
 app.use(express.json());
 
-// Rota de verificação de status (Health Check)
+// Um endereço simples para confirmar se o servidor está no ar.
 app.get('/api/health', (req: Request, res: Response) => {
   res.status(200).json({
     status: 'ok',
@@ -28,15 +27,14 @@ app.get('/api/health', (req: Request, res: Response) => {
   });
 });
 
-// 2. Registar as rotas da aplicação
-// Todas as rotas de clientes ficarão acessíveis em http://localhost:3000/api/clientes
+// Cada grupo cuida de um assunto do sistema e fica organizado sob o seu próprio endereço.
 app.use('/api/clientes', clienteRoutes);
 app.use('/api/produtos', produtoRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/vendas', vendaRoutes);
 
-// Inicialização do servidor
+// Depois de subir o servidor, também verificamos se o banco está acessível.
 app.listen(PORT, async () => {
   console.log(`=========================================`);
   console.log(`🚀 Servidor PDV iniciado na porta ${PORT}`);

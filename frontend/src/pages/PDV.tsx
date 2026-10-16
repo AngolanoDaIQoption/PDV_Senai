@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import type { Cliente, FormaPagamento, ItemCarrinho, Produto, Usuario } from "../types";
-import { buscarClientes, buscarProdutos } from "../services/api";
+import { ApiError, buscarClientes, buscarProdutos, criarVenda, login } from "../services/api";
 import { formatarMoeda } from "../utils/format";
 import ModalAutorizacaoGerente from "../components/ModalAutorizacaoGerente";
 
 const LIMITE_DESCONTO_CAIXA = 10;
 
+// A tela do caixa monta o carrinho, calcula os valores e organiza a confirmação da venda.
 export default function PDV() {
   const usuario: Usuario | null = JSON.parse(localStorage.getItem("usuario") ?? "null");
   const ehGerente = usuario?.perfil === "GERENTE";
@@ -20,7 +21,7 @@ export default function PDV() {
   const [pagamento, setPagamento] = useState<FormaPagamento>("DINHEIRO");
 
   const [modalGerenteAberto, setModalGerenteAberto] = useState(false);
-  const [descontoAutorizado, setDescontoAutorizado] = useState(false);
+  const [salvando, setSalvando] = useState(false);
   const [mensagemErro, setMensagemErro] = useState("");
   const [mensagemSucesso, setMensagemSucesso] = useState("");
 
@@ -50,6 +51,7 @@ export default function PDV() {
   });
 
   function adicionar(produto: Produto) {
+    // Um produto que já está no carrinho aumenta a quantidade, sem ultrapassar o estoque.
     setMensagemErro("");
     setMensagemSucesso("");
     setCarrinho((atual) => {
@@ -66,6 +68,7 @@ export default function PDV() {
   }
 
   function alterarQuantidade(id: number, delta: number) {
+    // O botão de menos remove o item ao chegar a zero; o de mais respeita o estoque disponível.
     setMensagemErro("");
     setMensagemSucesso("");
     setCarrinho((atual) =>
@@ -88,7 +91,7 @@ export default function PDV() {
     setCarrinho((atual) => atual.filter((i) => i.produto.id !== id));
   }
 
-  // Cálculos em centavos para evitar erros de ponto flutuante
+  // Trabalhamos em centavos durante a conta para evitar diferenças de arredondamento em dinheiro.
   const subtotalCentavos = carrinho.reduce((soma, i) => {
     const precoItemCentavos = Math.round(i.produto.preco * 100);
     return soma + precoItemCentavos * i.quantidade;
@@ -109,27 +112,69 @@ export default function PDV() {
   const totalCentavos = subtotalCentavos - valorDescontoCentavos;
   const total = totalCentavos / 100;
 
-  // Se o desconto ultrapassar 10%, exige perfil GERENTE ou liberação via modal
+  // Caixa precisa da confirmação de um gerente quando o desconto passa de 10%.
   const exigeAutorizacao =
-    !ehGerente && !descontoAutorizado && percentualEfetivo > LIMITE_DESCONTO_CAIXA;
+    !ehGerente && percentualEfetivo > LIMITE_DESCONTO_CAIXA;
 
   function limparVenda() {
+    // Depois de encerrar ou cancelar, deixamos o caixa pronto para a próxima compra.
     setCarrinho([]);
     setDescontoTexto("");
     setClienteId("");
     setPagamento("DINHEIRO");
     setBusca("");
-    setDescontoAutorizado(false);
   }
 
-  function executarFinalizacao() {
-    setMensagemSucesso(`Venda finalizada com sucesso! Total: ${formatarMoeda(total)}`);
+  async function executarFinalizacao(tokenGerente?: string): Promise<boolean> {
+    setSalvando(true);
     setMensagemErro("");
-    limparVenda();
+
+    try {
+      const venda = await criarVenda(
+        {
+          cliente_id: clienteId ? Number(clienteId) : null,
+          valor_desconto: valorDesconto,
+          forma_pagamento: pagamento,
+          itens: carrinho.map(({ produto, quantidade }) => ({
+            produto_id: produto.id,
+            quantidade,
+          })),
+        },
+        tokenGerente,
+      );
+
+      setProdutos((atuais) =>
+        atuais.map((produto) => {
+          const vendido = carrinho.find((item) => item.produto.id === produto.id);
+          return vendido
+            ? { ...produto, estoque: produto.estoque - vendido.quantidade }
+            : produto;
+        }),
+      );
+      setMensagemSucesso(`${venda.message} Total: ${formatarMoeda(venda.valor_total)}`);
+      setMensagemErro("");
+      setModalGerenteAberto(false);
+      limparVenda();
+      return true;
+    } catch (error) {
+      if (error instanceof ApiError && error.code === "MANAGER_AUTH_REQUIRED") {
+        setModalGerenteAberto(true);
+        return false;
+      }
+
+      const mensagem = error instanceof Error ? error.message : "Não foi possível finalizar a venda.";
+      setMensagemErro(mensagem);
+      return false;
+    } finally {
+      setSalvando(false);
+    }
   }
 
-  function finalizar() {
+  async function finalizar() {
+    // Só seguimos com itens; se o desconto pedir gerente, mostramos o modal antes de confirmar.
+    if (salvando || modalGerenteAberto) return;
     setMensagemSucesso("");
+    setMensagemErro("");
     if (carrinho.length === 0) {
       setMensagemErro("Adicione ao menos um produto à venda.");
       return;
@@ -138,15 +183,19 @@ export default function PDV() {
       setModalGerenteAberto(true);
       return;
     }
-    executarFinalizacao();
+    await executarFinalizacao();
   }
 
-  function onAutorizarGerente() {
-    setModalGerenteAberto(false);
-    setDescontoAutorizado(true);
-    setMensagemSucesso(`Venda finalizada com sucesso! Total: ${formatarMoeda(total)}`);
-    setMensagemErro("");
-    limparVenda();
+  async function onAutorizarGerente(email: string, senha: string) {
+    const resposta = await login(email, senha);
+    if (resposta.usuario.perfil !== "GERENTE") {
+      throw new Error("A conta informada não tem perfil de gerente.");
+    }
+
+    const finalizada = await executarFinalizacao(resposta.token);
+    if (!finalizada) {
+      throw new Error("A venda não foi concluída. Confira a mensagem no caixa e tente novamente.");
+    }
   }
 
   // Atalho F2 para finalizar a venda
@@ -193,6 +242,7 @@ export default function PDV() {
           onKeyDown={handleBuscaKeyDown}
           placeholder="Buscar por código ou descrição"
           autoFocus
+          disabled={salvando}
         />
         <p className="texto-suave" style={{ fontSize: "0.8rem", margin: "6px 0 0" }}>
           Pressione Enter para adicionar o primeiro produto encontrado.
@@ -219,7 +269,7 @@ export default function PDV() {
                   <button
                     className="btn btn-primario"
                     onClick={() => adicionar(p)}
-                    disabled={p.estoque < 1}
+                    disabled={salvando || p.estoque < 1}
                   >
                     {p.estoque < 1 ? "Sem estoque" : "Adicionar"}
                   </button>
@@ -263,6 +313,7 @@ export default function PDV() {
                         <button
                           className="btn btn-secundario"
                           onClick={() => alterarQuantidade(i.produto.id, -1)}
+                          disabled={salvando}
                         >
                           −
                         </button>
@@ -270,6 +321,7 @@ export default function PDV() {
                         <button
                           className="btn btn-secundario"
                           onClick={() => alterarQuantidade(i.produto.id, 1)}
+                          disabled={salvando}
                         >
                           +
                         </button>
@@ -277,7 +329,7 @@ export default function PDV() {
                     </td>
                     <td>{formatarMoeda(subtotalItem)}</td>
                     <td>
-                      <button className="btn btn-perigo" onClick={() => remover(i.produto.id)}>
+                      <button className="btn btn-perigo" onClick={() => remover(i.produto.id)} disabled={salvando}>
                         Remover
                       </button>
                     </td>
@@ -291,7 +343,7 @@ export default function PDV() {
         <div className="campos-venda">
           <label>
             Cliente (opcional)
-            <select value={clienteId} onChange={(e) => setClienteId(e.target.value)}>
+            <select value={clienteId} onChange={(e) => setClienteId(e.target.value)} disabled={salvando}>
               <option value="">Sem cliente</option>
               {clientes.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -303,7 +355,7 @@ export default function PDV() {
 
           <label>
             Forma de pagamento
-            <select value={pagamento} onChange={(e) => setPagamento(e.target.value as FormaPagamento)}>
+            <select value={pagamento} onChange={(e) => setPagamento(e.target.value as FormaPagamento)} disabled={salvando}>
               <option value="DINHEIRO">Dinheiro</option>
               <option value="PIX">Pix</option>
               <option value="CARTAO_DEBITO">Cartão de débito</option>
@@ -316,9 +368,9 @@ export default function PDV() {
             <div className="linha">
               <select
                 value={tipoDesconto}
+                disabled={salvando}
                 onChange={(e) => {
                   setTipoDesconto(e.target.value as "percentual" | "valor");
-                  setDescontoAutorizado(false);
                 }}
               >
                 <option value="percentual">%</option>
@@ -328,9 +380,9 @@ export default function PDV() {
                 type="text"
                 inputMode="decimal"
                 value={descontoTexto}
+                disabled={salvando}
                 onChange={(e) => {
                   setDescontoTexto(e.target.value);
-                  setDescontoAutorizado(false);
                 }}
                 placeholder="0"
               />
@@ -375,20 +427,22 @@ export default function PDV() {
               setMensagemErro("");
               setMensagemSucesso("");
             }}
+            disabled={salvando}
           >
             Cancelar venda
           </button>
-          <button type="button" className="btn btn-primario grande" onClick={finalizar}>
-            Finalizar venda (F2)
+          <button type="button" className="btn btn-primario grande" onClick={finalizar} disabled={salvando}>
+            {salvando ? "Finalizando..." : "Finalizar venda (F2)"}
           </button>
         </div>
       </section>
 
-      <ModalAutorizacaoGerente
-        aberto={modalGerenteAberto}
-        onFechar={() => setModalGerenteAberto(false)}
-        onAutorizar={onAutorizarGerente}
-      />
+      {modalGerenteAberto && (
+        <ModalAutorizacaoGerente
+          onFechar={() => setModalGerenteAberto(false)}
+          onAutorizar={onAutorizarGerente}
+        />
+      )}
     </div>
   );
 }

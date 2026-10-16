@@ -20,6 +20,7 @@ export interface IVenda {
   data_venda?: Date | string;
 }
 
+// O modelo reúne as consultas da venda e o formato mais completo usado no histórico.
 export class VendaModel {
   static async findAll(): Promise<IVenda[]> {
     const [rows] = await pool.execute<RowDataPacket[]>('SELECT * FROM vendas ORDER BY id DESC');
@@ -40,6 +41,7 @@ export class VendaModel {
   }
 
   static async listarComFiltros(filtros: { data?: string; cliente?: string; operador?: string }): Promise<IVendaCompleta[]> {
+    // Os JOINs já trazem nomes para a tela; filtros opcionais são adicionados conforme a busca.
     let sql = `
       SELECT 
         v.id, v.cliente_id, v.usuario_id, v.autorizado_por,
@@ -82,6 +84,7 @@ export class VendaModel {
       cancelado_por_nome?: string;
     })[];
 
+    // Cada venda recebe também seus itens, para o detalhe do histórico vir completo.
     const resultado = await Promise.all(
       vendas.map(async (venda) => {
         const itens = venda.id ? await ItemVendaModel.findByVendaId(venda.id) : [];

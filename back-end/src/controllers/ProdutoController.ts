@@ -3,7 +3,7 @@ import { ProdutoModel } from '../models/Produto.model';
 import { IProdutoInput } from '../routes/types';
 
 export class ProdutoController {
-  // Cadastro de produto (com validação de preço e código único)
+  // Validamos os dados principais antes de pedir ao modelo para criar o produto.
   static async create(req: Request, res: Response): Promise<Response> {
     try {
       const { codigo_barras, descricao, preco, estoque } = req.body as IProdutoInput;
@@ -29,7 +29,7 @@ export class ProdutoController {
     }
   }
 
-  // Busca rápida para o caixa (por nome/código) ou lista de todos os ativos
+  // Com termo de busca, retorna correspondências; sem termo, lista os produtos solicitados.
   static async listar(req: Request, res: Response): Promise<Response> {
     try {
       const termo = req.query.q as string;
@@ -39,7 +39,7 @@ export class ProdutoController {
         return res.status(200).json(produtos);
       }
       
-      // Se passar ?todos=true, traz ativos e inativos (usado na tela de Produtos)
+      // A tela de gestão pode pedir também os inativos com ?todos=true.
       const apenasAtivos = req.query.todos !== "true";
       const todos = await ProdutoModel.findAll(apenasAtivos);
       return res.status(200).json(todos);
@@ -49,7 +49,7 @@ export class ProdutoController {
     }
   }
 
-  // Inativação lógica do produto
+  // Em vez de apagar o cadastro, marcamos o produto como inativo.
   static async inativar(req: Request, res: Response): Promise<Response> {
     try {
       const id = Number(req.params.id);
@@ -66,7 +66,7 @@ export class ProdutoController {
     }
   }
 
-  // Reativação lógica do produto
+  // Reativar recupera o mesmo cadastro e seu histórico.
   static async ativar(req: Request, res: Response): Promise<Response> {
     try {
       const id = Number(req.params.id);
@@ -83,7 +83,7 @@ export class ProdutoController {
     }
   }
 
-  // Edição do produto
+  // Os campos enviados são encaminhados ao modelo para atualização.
   static async update(req: Request, res: Response): Promise<Response> {
     try {
       const id = Number(req.params.id);

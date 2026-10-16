@@ -1,3 +1,4 @@
+// Os tipos descrevem os dados que as telas compartilham entre si e com a API.
 export type Perfil = "CAIXA" | "SUPERVISOR" | "GERENTE";
 
 export interface Usuario {
