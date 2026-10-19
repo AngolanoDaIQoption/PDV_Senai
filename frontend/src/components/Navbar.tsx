@@ -53,7 +53,7 @@ export default function Navbar() {
       <div className="navbar-usuario">
         <button
           type="button"
-          className="btn btn-secundario"
+          className="btn btn-secundario theme-toggle"
           onClick={toggleTheme}
           title={isDark ? "Mudar para Modo Claro" : "Mudar para Modo Escuro"}
           style={{ padding: "6px 12px", fontSize: "0.85rem" }}
@@ -62,11 +62,12 @@ export default function Navbar() {
         </button>
 
         {usuario && (
-          <span>
-            {usuario.nome} ({usuario.perfil})
+          <span className="usuario-chip">
+            <span className="avatar">{usuario.nome?.charAt(0).toUpperCase() ?? "U"}</span>
+            {usuario.nome} · {usuario.perfil}
           </span>
         )}
-        <button className="btn btn-secundario" onClick={sair}>
+        <button className="btn btn-secundario" onClick={sair} style={{ background: "rgba(255,255,255,0.12)", color: "#fff", borderColor: "rgba(255,255,255,0.2)" }}>
           Sair
         </button>
       </div>

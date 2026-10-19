@@ -105,7 +105,7 @@ export default function Login() {
       <div style={{ position: "absolute", top: "20px", right: "20px" }}>
         <button
           type="button"
-          className="btn btn-secundario"
+          className="btn btn-secundario theme-toggle"
           onClick={toggleTheme}
           title={isDark ? "Mudar para Modo Claro" : "Mudar para Modo Escuro"}
           style={{ padding: "6px 12px", fontSize: "0.85rem" }}
@@ -115,8 +115,10 @@ export default function Login() {
       </div>
 
       <form className="card login-card" onSubmit={entrar}>
-        <h1>MS² Vestuário</h1>
-        <p className="texto-suave">Entre para abrir o caixa.</p>
+        <div style={{ textAlign: "center", marginBottom: "8px" }}>
+          <h1>MS² Vestuário</h1>
+          <p className="texto-suave">Entre para abrir o caixa.</p>
+        </div>
 
         <label>
           E-mail
