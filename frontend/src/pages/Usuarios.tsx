@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
-import type { Perfil, Usuario } from "../types";
-import { atualizarUsuario, buscarUsuarios, criarUsuario } from "../services/api";
+import { useEffect, useState } from "react"; // Hooks do React para carregar dados e controlar estados do formulário
+import type { Perfil, Usuario } from "../types"; // Tipos do domínio de usuários e perfis do sistema
+import { atualizarUsuario, buscarUsuarios, criarUsuario } from "../services/api"; // Funções da API para consultar e manipular usuários
 
+// Lista de cargos que o gerente pode atribuir no cadastro de usuários.
 const perfis: Perfil[] = ["CAIXA", "SUPERVISOR"];
 const formularioInicial = {
   nome: "",

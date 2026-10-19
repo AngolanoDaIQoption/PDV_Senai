@@ -1,13 +1,13 @@
-import express, { Request, Response } from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import { testConnection } from './config/db';
-import produtoRoutes from './routes/produto.routes';
-import usuarioRoutes from './routes/usuario.routes';
-import authRoutes from './routes/auth.routes';
-import vendaRoutes from './routes/venda.routes';
+import express, { Request, Response } from 'express'; // Framework principal da API e tipos de requisição/resposta HTTP
+import cors from 'cors'; // Permite o frontend consumir a API mesmo em domínios diferentes
+import dotenv from 'dotenv'; // Carrega variáveis de ambiente escondidas do arquivo .env
+import { testConnection } from './config/db'; // Verifica se a conexão com o banco de dados está funcionando
+import produtoRoutes from './routes/produto.routes'; // Rotas de gerenciamento de produtos
+import usuarioRoutes from './routes/usuario.routes'; // Rotas de usuários e permissões
+import authRoutes from './routes/auth.routes'; // Rotas de login e autenticação
+import vendaRoutes from './routes/venda.routes'; // Rotas do processo de venda
 
-import clienteRoutes from './routes/cliente.routes';
+import clienteRoutes from './routes/cliente.routes'; // Rotas de cadastro e consulta de clientes
 
 dotenv.config();
 

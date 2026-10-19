@@ -1,6 +1,6 @@
-import { useState, useEffect, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
-import { login } from "../services/api";
+import { useState, useEffect, type FormEvent } from "react"; // Hooks do React para estado, efeito colateral e tipagem do evento do formulário
+import { useNavigate } from "react-router-dom"; // Hook que permite navegar entre páginas programaticamente
+import { login } from "../services/api"; // Chamada de autenticação com a API do backend
 
 export default function Login() {
   const navigate = useNavigate();

@@ -1,8 +1,9 @@
-import type { Cliente, FormaPagamento, Perfil, Produto, Usuario, VendaHistorico } from "../types";
+import type { Cliente, FormaPagamento, Perfil, Produto, Usuario, VendaHistorico } from "../types"; // Tipos compartilhados com a UI para manter as chamadas consistentes
 
-const API_URL = "http://localhost:3000/api";
+const API_URL = "http://localhost:3000/api"; // Base de todas as rotas do backend da aplicação
 
 // O logout é compartilhado pelo tratamento de sessão e remove os dados do navegador.
+// Isso impede que o usuário continue acessando a aplicação com uma sessão inválida.
 export function logout() {
   localStorage.removeItem("token");
   localStorage.removeItem("usuario");
