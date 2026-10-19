@@ -20,6 +20,9 @@ export default function Usuarios() {
   const [form, setForm] = useState(formularioInicial);
   const [salvandoNovo, setSalvandoNovo] = useState(false);
 
+  const usuariosAtivos = usuarios.filter((usuario) => usuario.ativo !== false).length;
+  const totalGerentes = usuarios.filter((usuario) => usuario.perfil === "GERENTE").length;
+
   async function carregarUsuarios() {
     try {
       setErro("");
@@ -114,14 +117,26 @@ export default function Usuarios() {
   return (
     <div className="pagina">
       <section className="card">
-        <h2>Novo usuário</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
+          <div>
+            <p className="texto-suave" style={{ margin: 0, textTransform: "uppercase", letterSpacing: "0.06em", fontSize: "0.75rem" }}>
+              Gestão de acessos
+            </p>
+            <h2 style={{ marginTop: 6 }}>Novo usuário</h2>
+          </div>
+          <div className="summary-inline">
+            <span>{usuarios.length} total</span>
+            <span>{usuariosAtivos} ativos</span>
+            <span>{totalGerentes} gerentes</span>
+          </div>
+        </div>
 
         <form
           onSubmit={cadastrarUsuario}
           autoComplete="off"
-          style={{ display: "grid", gap: 12, marginBottom: 20 }}
+          style={{ display: "grid", gap: 12, marginBottom: 24 }}
         >
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12 }}>
+          <div className="form-grid">
             <label>
               Nome
               <input
@@ -171,19 +186,32 @@ export default function Usuarios() {
             </label>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 12 }}>
+            <span className="texto-suave" style={{ fontSize: "0.8rem" }}>Perfis permitidos: CAIXA e SUPERVISOR</span>
             <button type="submit" className="btn btn-primario" disabled={salvandoNovo}>
               {salvandoNovo ? "Cadastrando..." : "Cadastrar usuário"}
             </button>
           </div>
         </form>
 
-        <h2>Gestão de usuários</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+          <h2 style={{ margin: 0 }}>Gestão de usuários</h2>
+          <button
+            type="button"
+            className="btn btn-secundario"
+            onClick={carregarUsuarios}
+            disabled={carregando}
+          >
+            {carregando ? "Atualizando..." : "Atualizar lista"}
+          </button>
+        </div>
 
         {erro && <p className="erro">{erro}</p>}
 
         {carregando ? (
-          <p className="texto-suave">Carregando usuários...</p>
+          <div className="empty-state">
+            <p>Carregando usuários...</p>
+          </div>
         ) : (
           <table>
             <thead>
@@ -204,21 +232,7 @@ export default function Usuarios() {
                   <td>{usuario.email}</td>
                   <td>
                     {usuario.perfil === "GERENTE" ? (
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          padding: "8px 12px",
-                          borderRadius: 6,
-                          background: "var(--fundo)",
-                          color: "var(--texto)",
-                          fontWeight: 600,
-                          width: "100%",
-                          justifyContent: "center",
-                        }}
-                      >
-                        GERENTE
-                      </span>
+                      <span className="perfil-badge perfil-gerente">GERENTE</span>
                     ) : (
                       <select
                         value={usuario.perfil}
@@ -235,15 +249,7 @@ export default function Usuarios() {
                   </td>
                   <td>
                     <span
-                      className={usuario.ativo === false ? "texto-suave" : ""}
-                      style={{
-                        display: "inline-flex",
-                        padding: "4px 10px",
-                        borderRadius: 999,
-                        background: usuario.ativo === false ? "var(--fundo)" : "rgba(34, 197, 94, 0.15)",
-                        color: usuario.ativo === false ? "var(--texto-suave)" : "#22c55e",
-                        fontWeight: 600,
-                      }}
+                      className={usuario.ativo === false ? "status-badge status-inativo" : "status-badge status-ativo"}
                     >
                       {usuario.ativo === false ? "Inativo" : "Ativo"}
                     </span>
@@ -251,7 +257,7 @@ export default function Usuarios() {
                   <td>
                     <button
                       type="button"
-                      className="btn btn-secundario"
+                      className={`btn ${usuario.perfil === "GERENTE" ? "btn-secundario" : usuario.ativo === false ? "btn-primario" : "btn-secundario"}`}
                       onClick={() => alternarAtivo(usuario)}
                       disabled={salvandoId === usuario.id || usuario.perfil === "GERENTE"}
                       title={usuario.perfil === "GERENTE" ? "Gerente não pode ser inativado" : "Alterar status"}
@@ -267,8 +273,10 @@ export default function Usuarios() {
               ))}
               {usuarios.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="texto-suave">
-                    Nenhum usuário encontrado.
+                  <td colSpan={6}>
+                    <div className="empty-state empty-state-table">
+                      <p>Nenhum usuário encontrado.</p>
+                    </div>
                   </td>
                 </tr>
               )}
