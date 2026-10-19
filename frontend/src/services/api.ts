@@ -80,10 +80,18 @@ export interface LoginResponse {
 }
 
 export async function login(email: string, senha: string): Promise<LoginResponse> {
-  return apiFetch<LoginResponse>("/auth/login", {
+  localStorage.removeItem("token");
+  localStorage.removeItem("usuario");
+
+  const resposta = await apiFetch<LoginResponse>("/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, senha }),
   }, false);
+
+  return {
+    ...resposta,
+    usuario: normalizarUsuario(resposta.usuario),
+  };
 }
 
 export interface CriarVendaInput {
@@ -113,6 +121,14 @@ export async function criarVenda(
     headers,
     body: JSON.stringify(venda),
   });
+}
+
+interface UsuarioApi {
+  id: number;
+  nome: string;
+  email: string;
+  perfil: Perfil;
+  ativo?: boolean | number;
 }
 
 interface ProdutoApi {
@@ -152,6 +168,16 @@ function normalizarCliente(item: ClienteApi): Cliente {
     cpf: String(item.cpf ?? ""),
     telefone: String(item.telefone ?? ""),
     email: String(item.email ?? ""),
+  };
+}
+
+function normalizarUsuario(item: UsuarioApi): Usuario {
+  return {
+    id: item.id,
+    nome: item.nome,
+    email: item.email,
+    perfil: item.perfil,
+    ativo: item.ativo === undefined ? true : Boolean(item.ativo),
   };
 }
 
@@ -232,8 +258,8 @@ export async function atualizarCliente(
 }
 
 export async function buscarUsuarios(): Promise<Usuario[]> {
-  const dados = await apiFetch<Usuario[]>("/usuarios");
-  return Array.isArray(dados) ? dados : [];
+  const dados = await apiFetch<UsuarioApi[]>("/usuarios");
+  return Array.isArray(dados) ? dados.map(normalizarUsuario) : [];
 }
 export async function criarUsuario(dados: {
   nome: string;

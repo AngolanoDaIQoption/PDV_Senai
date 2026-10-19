@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'; // Tipos do Express para middleware de autenticação e autorização
 import jwt from 'jsonwebtoken'; // Gera e valida tokens JWT usados na sessão do sistema
+import { UsuarioModel } from '../models/Usuario.model'; // Consulta o usuário atual para confirmar se a conta continua ativa
 import { Perfil } from '../routes/types'; // Tipo do perfil para validar acesso por cargo
 
 export interface UsuarioTokenPayload {
@@ -16,7 +17,7 @@ declare global {
 }
 
 // Confere o token Bearer antes de deixar o pedido seguir para a rota protegida.
-export function autenticarToken(req: Request, res: Response, next: NextFunction): void | Response {
+export async function autenticarToken(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
   const authHeader = req.headers.authorization || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
@@ -29,6 +30,11 @@ export function autenticarToken(req: Request, res: Response, next: NextFunction)
       token,
       process.env.JWT_SECRET || 'pdv_dev_secret'
     ) as UsuarioTokenPayload;
+
+    const usuarioAtual = await UsuarioModel.findById(payload.id);
+    if (!usuarioAtual || !usuarioAtual.ativo) {
+      return res.status(401).json({ error: 'Usuário inativo ou não encontrado.' });
+    }
 
     req.usuario = payload;
     return next();
