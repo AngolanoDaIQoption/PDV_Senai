@@ -1,242 +1,188 @@
 # 🛍️ MS² Vestuário — Sistema de Gestão e Frente de Caixa (PDV)
 
-> **Guia Didático e Documentação Técnica de Instalação e Arquitetura**
->
-> *Material elaborado com foco em boas práticas de Full Stack, separação de responsabilidades, segurança (RBAC) e integridade transacional.*
+Sistema de gestão para loja de vestuário com foco em caixa, controle de produtos, clientes, usuários e histórico de vendas.
 
-## 📑 Sumário
+## Visão geral
 
-1. [Visão Geral e Contexto do Projeto](#1-visão-geral-e-contexto-do-projeto)
-2. [Stack Tecnológica](#2-stack-tecnológica)
-3. [Repositórios Oficiais](#3-repositórios-oficiais)
-4. [Preparação do Ambiente de Desenvolvimento](#4-preparação-do-ambiente-de-desenvolvimento)
-5. [Passo a Passo: Backend (API)](#5-passo-a-passo-backend-api)
-   - [Configuração do Banco de Dados MySQL](#configuração-do-banco-de-dados-mysql)
-   - [Instalação e Arquivo ](#instalação-e-arquivo-env)[`.env`](#instalação-e-arquivo-env)
-   - [Inicialização e Teste da API](#inicialização-e-teste-da-api)
-6. [Passo a Passo: Frontend (Interface Web)](#6-passo-a-passo-frontend-interface-web)
-   - [Instalação e Variáveis de Conexão](#instalação-e-variáveis-de-conexão)
-   - [Execução e Portas de Acesso](#execução-e-portas-de-acesso)
-7. [Guia de Exploração Didática e Roteiro de Testes](#7-guia-de-exploração-didática-e-roteiro-de-testes)
-8. [Pontos Críticos de Aprendizado Técnico](#8-pontos-críticos-de-aprendizado-técnico)
+O projeto foi desenvolvido em arquitetura full stack com:
 
-## 1. Visão Geral e Contexto do Projeto
+- Frontend em React + Vite
+- Backend em Node.js + Express + TypeScript
+- Banco de dados em MySQL
+- Autenticação por JWT
+- Controle de acesso por perfil: CAIXA, SUPERVISOR e GERENTE
 
-O **MS² Vestuário** é uma aplicação Full Stack projetada para digitalizar e otimizar a operação de uma loja de roupas em expansão. O sistema substitui o controle manual (cadernos e calculadoras) por uma plataforma ágil e segura.
+A aplicação permite:
 
-O software oferece:
+- realizar vendas com cálculo de subtotal, desconto e valor final;
+- controlar estoque em tempo real;
+- cadastrar clientes e consultar histórico;
+- gerenciar produtos e usuários conforme perfil;
+- impedir ações sensíveis sem autorização do gerente.
 
-- **Frente de Caixa (PDV):** Registro rápido de vendas com cálculo automático de subtotais, descontos e troco.
-- **Catálogo Dinâmico:** Gestão de produtos e controle de estoque integrado, impedindo vendas de itens esgotados.
-- **Controle de Clientes:** Base de dados centralizada com validação de CPF para fidelização e histórico de compras.
-- **Hierarquia de Acessos (RBAC):** Proteção de rotas baseada em perfis (`CAIXA`, `SUPERVISOR`, `GERENTE`). Cancelamentos e descontos altos exigem autorização superior.
+## Stack tecnológica
 
-```
-flowchart LR
-    subgraph Frontend["Front-end (Vite + React)"]
-        UI[Interface PDV]
-        State[Gerenciador de Carrinho]
-        Fetch[HTTP Fetch / Bearer Token]
-    end
+| Camada | Tecnologia | Uso no projeto |
+| --- | --- | --- |
+| Frontend | React | Interface do usuário |
+| Frontend | Vite | Servidor de desenvolvimento e build |
+| Frontend | React Router DOM | Rotas protegidas e navegação |
+| Backend | Node.js | Execução da API |
+| Backend | Express | Rotas e middlewares |
+| Backend | TypeScript | Tipagem e organização do código |
+| Backend | MySQL2 | Conexão com banco de dados |
+| Backend | JWT | Autenticação e autorização |
+| Backend | bcrypt | Criptografia de senhas |
+| Banco | MySQL | Persistência de clientes, produtos, usuários e vendas |
 
-    subgraph Backend["Back-end (Node.js + Express)"]
-        Router[Roteamento /api]
-        Auth[Middleware JWT & Roles]
-        Controllers[Venda Controller]
-        Models[Transações ACID]
-    end
+## Estrutura do projeto
 
-    subgraph Database["Banco de Dados Relacional"]
-        MySQL[(MySQL 8.x: ms2_vestuario)]
-    end
-
-    UI --> State --> Fetch
-    Fetch -- "JSON / REST (HTTP :3000)" --> Router
-    Router --> Auth --> Controllers --> Models
-    Models --> MySQL
-
-```
-
-## 2. Stack Tecnológica
-
-| Camada       | Tecnologia             | Versão         | Função Principal                                                        |
-| ------------ | ---------------------- | -------------- | ----------------------------------------------------------------------- |
-| **Backend**  | **Node.js**            | `>= 20.x`      | Ambiente de execução JavaScript server-side.                            |
-| **Backend**  | **Express**            | `^5.x`         | Framework HTTP para criação de rotas, middlewares e APIs REST.          |
-| **Backend**  | **TypeScript**         | `^5.x`         | Tipagem estática, reduzindo bugs em tempo de desenvolvimento.           |
-| **Backend**  | **MySQL2 (Promise)**   | `^3.x`         | Driver de alta performance com suporte a Transações e Pool de Conexões. |
-| **Backend**  | **bcrypt**             | `^6.x`         | Algoritmo criptográfico para hashing seguro de senhas.                  |
-| **Backend**  | **jsonwebtoken (JWT)** | `^9.x`         | Autenticação stateless e controle de permissões de rota.                |
-| **Frontend** | **React**              | `^18.x / 19.x` | Biblioteca componentizada para interfaces de usuário.                   |
-| **Frontend** | **Vite**               | `^5.x`         | Build tool e servidor de desenvolvimento ultra-rápido.                  |
-| **Frontend** | **Tailwind CSS**       | `^3.x / 4.x`   | Framework de estilização utilitária moderna e responsiva.               |
-| **Frontend** | **React Router DOM**   | `^6.x / 7.x`   | Roteamento dinâmico e proteção de telas no lado do cliente.             |
-| **Database** | **MySQL**              | `^8.x`         | Banco de dados relacional com integridade referencial.                  |
-
-## 3. Repositórios Oficiais
-
-*Caso o projeto esteja dividido em pastas, navegue conforme a estrutura local ou clone o repositório unificado:*
-
-- 🔗 **Repositório Unificado:** `https://github.com/AngolanoDaIQoption/PDV_Senai`
-
-> 💡 *Estrutura:*
->
-> - `back-end/` (API Node.js + Express + TypeScript)
-> - `front-end/` (Interface React + Vite + Tailwind)
-
-## 4. Preparação do Ambiente de Desenvolvimento
-
-Certifique-se de que sua máquina possui:
-
-1. **Node.js**: Versão **20 LTS** ou superior (`node -v`).
-2. **NPM**: Instalado junto com o Node (`npm -v`).
-3. **MySQL Server**: Versão **8.0** ou superior rodando localmente.
-
-## 5. Passo a Passo: Backend (API)
-
-### Configuração do Banco de Dados MySQL
-
-Abra seu cliente MySQL (Workbench, DBeaver ou extensão do VS Code) e execute o script DDL oficial abaixo para criar o esquema `ms2_vestuario` e suas entidades relacionais:
-
-```
--- MySQL Workbench Forward Engineering
-
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
-
--- -----------------------------------------------------
--- Schema ms2_vestuario
--- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `ms2_vestuario` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
-USE `ms2_vestuario` ;
-
--- -----------------------------------------------------
--- Table `ms2_vestuario`.`clientes`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `ms2_vestuario`.`clientes` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `nome` VARCHAR(100) NOT NULL,
-  `cpf` CHAR(11) NOT NULL,
-  `telefone` VARCHAR(20) NULL DEFAULT NULL,
-  `email` VARCHAR(100) NULL DEFAULT NULL,
-  `criado_em` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `cpf` (`cpf` ASC) VISIBLE)
-ENGINE = InnoDB
-AUTO_INCREMENT = 3
-DEFAULT CHARACTER SET = utf8mb4;
-
--- -----------------------------------------------------
--- Table `ms2_vestuario`.`usuarios`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `ms2_vestuario`.`usuarios` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `nome` VARCHAR(100) NOT NULL,
-  `email` VARCHAR(100) NOT NULL,
-  `senha` VARCHAR(255) NOT NULL,
-  `perfil` VARCHAR(20) NOT NULL,
-  `ativo` TINYINT(1) NOT NULL DEFAULT '1',
-  `criado_em` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `email` (`email` ASC) VISIBLE)
-ENGINE = InnoDB
-AUTO_INCREMENT = 4
-DEFAULT CHARACTER SET = utf8mb4;
-
--- -----------------------------------------------------
--- Table `ms2_vestuario`.`vendas`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `ms2_vestuario`.`vendas` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `cliente_id` INT NULL DEFAULT NULL,
-  `usuario_id` INT NOT NULL,
-  `autorizado_por` INT NULL DEFAULT NULL,
-  `valor_subtotal` DECIMAL(10,2) NOT NULL,
-  `percentual_desconto` DECIMAL(5,2) NOT NULL DEFAULT '0.00',
-  `valor_desconto` DECIMAL(10,2) NOT NULL DEFAULT '0.00',
-  `valor_total` DECIMAL(10,2) NOT NULL,
-  `forma_pagamento` VARCHAR(20) NOT NULL,
-  `status` VARCHAR(20) NOT NULL DEFAULT 'FINALIZADA',
-  `motivo_cancelamento` TEXT NULL DEFAULT NULL,
-  `cancelado_por` INT NULL DEFAULT NULL,
-  `cancelado_em` DATETIME NULL DEFAULT NULL,
-  `data_venda` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  INDEX `cliente_id` (`cliente_id` ASC) VISIBLE,
-  INDEX `usuario_id` (`usuario_id` ASC) VISIBLE,
-  INDEX `autorizado_por` (`autorizado_por` ASC) VISIBLE,
-  INDEX `cancelado_por` (`cancelado_por` ASC) VISIBLE,
-  CONSTRAINT `vendas_ibfk_1` FOREIGN KEY (`cliente_id`) REFERENCES `ms2_vestuario`.`clientes` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `vendas_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `ms2_vestuario`.`usuarios` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `vendas_ibfk_3` FOREIGN KEY (`autorizado_por`) REFERENCES `ms2_vestuario`.`usuarios` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `vendas_ibfk_4` FOREIGN KEY (`cancelado_por`) REFERENCES `ms2_vestuario`.`usuarios` (`id`) ON DELETE RESTRICT)
-ENGINE = InnoDB
-AUTO_INCREMENT = 4
-DEFAULT CHARACTER SET = utf8mb4;
-
--- -----------------------------------------------------
--- Table `ms2_vestuario`.`produtos`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `ms2_vestuario`.`produtos` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `codigo_barras` VARCHAR(50) NOT NULL,
-  `descricao` VARCHAR(150) NOT NULL,
-  `preco` DECIMAL(10,2) NOT NULL,
-  `estoque` INT NOT NULL,
-  `ativo` TINYINT(1) NOT NULL DEFAULT '1',
-  `criado_em` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `codigo_barras` (`codigo_barras` ASC) VISIBLE)
-ENGINE = InnoDB
-AUTO_INCREMENT = 4
-DEFAULT CHARACTER SET = utf8mb4;
-
--- -----------------------------------------------------
--- Table `ms2_vestuario`.`itens_venda`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `ms2_vestuario`.`itens_venda` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `venda_id` INT NOT NULL,
-  `produto_id` INT NOT NULL,
-  `quantidade` INT NOT NULL,
-  `preco_unitario` DECIMAL(10,2) NOT NULL,
-  `subtotal` DECIMAL(10,2) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `unq_venda_produto` (`venda_id` ASC, `produto_id` ASC) VISIBLE,
-  INDEX `produto_id` (`produto_id` ASC) VISIBLE,
-  CONSTRAINT `itens_venda_ibfk_1` FOREIGN KEY (`venda_id`) REFERENCES `ms2_vestuario`.`vendas` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `itens_venda_ibfk_2` FOREIGN KEY (`produto_id`) REFERENCES `ms2_vestuario`.`produtos` (`id`) ON DELETE RESTRICT)
-ENGINE = InnoDB
-AUTO_INCREMENT = 4
-DEFAULT CHARACTER SET = utf8mb4;
-
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
-
+```text
+PDV/
+├── back-end/
+│   ├── src/
+│   │   ├── config/
+│   │   ├── controllers/
+│   │   ├── middlewares/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   └── index.ts
+│   ├── .env
+│   ├── package.json
+│   ├── seed.ts
+│   └── tsconfig.json
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   ├── index.html
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── tsconfig.*.json
+├── README.md
+└── package.json
 ```
 
-### Instalação e Arquivo `.env`
+## Pré-requisitos
 
-1. Pelo terminal, navegue até a pasta da API:
+Antes de rodar o projeto, verifique se a máquina possui:
 
-   Bash
+- Node.js 20+
+- npm
+- MySQL 8+
+- editor como VS Code
+
+## Configuração do banco de dados
+
+Crie o banco e as tabelas no MySQL com o script abaixo. Esse bloco gera o esquema necessário para o funcionamento da API e do módulo de vendas.
+
+```sql
+CREATE DATABASE IF NOT EXISTS ms2_vestuario;
+USE ms2_vestuario;
+
+CREATE TABLE clientes (
+    id INT NOT NULL AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL,
+    cpf CHAR(11) NOT NULL,
+    telefone VARCHAR(20) NULL,
+    email VARCHAR(100) NULL,
+    criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY cpf_unique (cpf)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE usuarios (
+    id INT NOT NULL AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    senha VARCHAR(255) NOT NULL,
+    perfil VARCHAR(20) NOT NULL,
+    ativo TINYINT(1) NOT NULL DEFAULT 1,
+    criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY email_unique (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE produtos (
+    id INT NOT NULL AUTO_INCREMENT,
+    codigo_barras VARCHAR(50) NOT NULL,
+    descricao VARCHAR(150) NOT NULL,
+    preco DECIMAL(10,2) NOT NULL,
+    estoque INT NOT NULL,
+    ativo TINYINT(1) NOT NULL DEFAULT 1,
+    criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY codigo_barras_unique (codigo_barras)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE vendas (
+    id INT NOT NULL AUTO_INCREMENT,
+    cliente_id INT NULL,
+    usuario_id INT NOT NULL,
+    autorizado_por INT NULL,
+    valor_subtotal DECIMAL(10,2) NOT NULL,
+    percentual_desconto DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+    valor_desconto DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    valor_total DECIMAL(10,2) NOT NULL,
+    forma_pagamento VARCHAR(20) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'FINALIZADA',
+    motivo_cancelamento TEXT NULL,
+    cancelado_por INT NULL,
+    cancelado_em DATETIME NULL,
+    data_venda DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY cliente_id_idx (cliente_id),
+    KEY usuario_id_idx (usuario_id),
+    KEY autorizado_por_idx (autorizado_por),
+    KEY cancelado_por_idx (cancelado_por),
+    CONSTRAINT fk_vendas_cliente
+        FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+    CONSTRAINT fk_vendas_usuario
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    CONSTRAINT fk_vendas_autorizado_por
+        FOREIGN KEY (autorizado_por) REFERENCES usuarios(id),
+    CONSTRAINT fk_vendas_cancelado_por
+        FOREIGN KEY (cancelado_por) REFERENCES usuarios(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE itens_venda (
+    id INT NOT NULL AUTO_INCREMENT,
+    venda_id INT NOT NULL,
+    produto_id INT NOT NULL,
+    quantidade INT NOT NULL,
+    preco_unitario DECIMAL(10,2) NOT NULL,
+    subtotal DECIMAL(10,2) NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY unique_venda_produto (venda_id, produto_id),
+    KEY produto_id_idx (produto_id),
+    CONSTRAINT fk_itens_venda_venda
+        FOREIGN KEY (venda_id) REFERENCES vendas(id),
+    CONSTRAINT fk_itens_venda_produto
+        FOREIGN KEY (produto_id) REFERENCES produtos(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
+
+Tabela principal do projeto:
+
+- clientes
+- produtos
+- usuarios
+- vendas
+- itens_venda
+
+## Backend
+
+### 1) Instalar dependências
+
+```bash
 cd back-end
-
-```
-2. Instale as dependências:
-
-   Bash
-```
 npm install
-
 ```
-3. Crie um arquivo `.env` na raiz da pasta `back-end`:
 
-   Snippet de código
-```
+### 2) Criar arquivo .env
+
+Crie um arquivo `.env` dentro de `back-end` com o seguinte conteúdo:
+
+```env
 PORT=3000
 DB_HOST=localhost
 DB_USER=root
@@ -244,19 +190,132 @@ DB_PASSWORD=sua_senha_mysql
 DB_PORT=3306
 DB_NAME=ms2_vestuario
 JWT_SECRET=chave_secreta_pdv_2026
-
 ```
 
-### Inicialização e Teste da API
+### 3) Rodar a API
 
-Inicie o servidor de desenvolvimento:
-
-```
+```bash
 npm run dev
-
 ```
 
-Se a porta `3000` estiver ocupada, libere-a com `npx kill-port 3000` antes de rodar o comando.
+A API ficará disponível em:
+
+```text
+http://localhost:3000
+```
+
+O endpoint de saúde:
+
+```text
+http://localhost:3000/api/health
+```
+
+## Frontend
+
+### 1) Instalar dependências
+
+```bash
+cd frontend
+npm install
+```
+
+### 2) Rodar a aplicação
+
+```bash
+npm run dev
+```
+
+A interface normalmente abre em:
+
+```text
+http://localhost:5173
+```
+
+## Fluxo de autenticação e permissões
+
+O sistema usa JWT para autenticar usuários.
+
+Perfis disponíveis:
+
+- CAIXA: acesso ao caixa e cadastro de clientes
+- SUPERVISOR: gestão de produtos
+- GERENTE: acesso completo, como gestão de usuários e histórico de vendas
+
+As rotas são protegidas por middlewares de autenticação e autorização, evitando acesso indevido.
+
+## Funcionalidades principais
+
+### PDV
+
+- busca de produtos por código ou descrição;
+- inserção no carrinho;
+- alteração de quantidade;
+- cálculo de subtotal e desconto;
+- escolha de forma de pagamento;
+- integração com autorização de gerente em descontos maiores.
+
+### Produtos
+
+- cadastro de produto;
+- edição de dados;
+- ativação/inativação;
+- ajuste de preço e estoque.
+
+### Clientes
+
+- cadastro com validação de CPF;
+- máscara e formatação dos campos;
+- consulta/listagem;
+- edição dos dados cadastrais.
+
+### Usuários
+
+- cadastro de novos usuários;
+- alteração de perfil;
+- ativação/inativação;
+- proteção para não inativar gerente.
+
+### Vendas
+
+- registro do histórico;
+- detalhamento dos itens comprados;
+- filtros por cliente e data.
+
+## Primeiro acesso
+
+No login, há a opção de criar o usuário inicial (setup). Essa ação cria o primeiro gerente do sistema.
+
+Também é possível criar um usuário manualmente pelo painel administrativo, desde que haja login do gerente.
+
+## Observações importantes
+
+- O backend grava o histórico da venda e os itens comprados, preservando o preço na data da compra.
+- O estoque é atualizado junto com a venda em uma mesma transação, evitando inconsistência.
+- Descontos acima do limite permitido exigem autorização de gerente.
+- A senha do usuário é armazenada com hash usando bcrypt.
+
+## Scripts disponíveis
+
+### Backend
+
+```bash
+npm run dev
+npm run build
+npm run start
+npm run seed
+```
+
+### Frontend
+
+```bash
+npm run dev
+npm run build
+npm run preview
+```
+
+## Conclusão
+
+Este projeto representa uma aplicação de PDV funcional, com foco em arquitetura, segurança, permissões por perfil e consistência de dados. A estrutura atual está organizada para facilitar manutenção, evolução e apresentação do sistema em ambiente acadêmico ou profissional.
 
 ## 6. Passo a Passo: Frontend (Interface Web)
 
@@ -329,4 +388,4 @@ sequenceDiagram
 - **Transações SQL (ACID):** Durante o checkout, o sistema executa múltiplos comandos (`INSERT` na venda, `INSERT` nos itens, `UPDATE` no estoque). O uso de transações (`BEGIN`, `COMMIT`, `ROLLBACK`) garante que o banco de dados nunca ficará inconsistente caso haja uma queda de energia ou erro no meio do processo.
 - **Segurança e RBAC:** Middlewares verificam não apenas a validade criptográfica do Token JWT, mas também a hierarquia da conta (`perfil`), bloqueando acessos indevidos antes mesmo que a rota seja executada.
 
-👨‍💻 *Desenvolvido para fins acadêmicos e práticas avançadas de arquitetura de software.*
+ *Desenvolvido para fins acadêmicos e práticas avançadas de arquitetura de software.*
