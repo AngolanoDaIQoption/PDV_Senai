@@ -10,4 +10,7 @@ vendaRoutes.post('/', autenticarToken, autorizarPerfil(['CAIXA', 'GERENTE']), Ve
 // O histórico completo fica restrito ao gerente.
 vendaRoutes.get('/', autenticarToken, autorizarPerfil(['GERENTE']), VendaController.listarTodas);
 
+// Apenas gerentes podem cancelar uma venda já finalizada, com registro do motivo.
+vendaRoutes.patch('/:id/cancelar', autenticarToken, autorizarPerfil(['GERENTE']), VendaController.cancelar);
+
 export default vendaRoutes;

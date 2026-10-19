@@ -1,4 +1,4 @@
-import { RowDataPacket, ResultSetHeader } from 'mysql2/promise'; // Tipos de resposta da base e operações DML
+import { PoolConnection, RowDataPacket, ResultSetHeader } from 'mysql2/promise'; // Tipos de resposta da base e operações DML
 import pool from '../config/db'; // Pool para consultar e registrar vendas
 import { ItemVendaModel } from './ItemVenda.model'; // Carrega os itens que compõem cada venda
 import { IVendaCompleta } from '../routes/types'; // Tipo completo do histórico da venda para a tela do gerente
@@ -103,7 +103,7 @@ export class VendaModel {
       `INSERT INTO vendas (
         cliente_id, usuario_id, autorizado_por, valor_subtotal, 
         percentual_desconto, valor_desconto, valor_total, forma_pagamento
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)` ,
       [
         venda.cliente_id || null,
         venda.usuario_id,
@@ -116,5 +116,24 @@ export class VendaModel {
       ]
     );
     return result.insertId;
+  }
+
+  static async cancelar(
+    id: number,
+    motivo: string,
+    canceladoPor: number,
+    connection?: PoolConnection,
+  ): Promise<boolean> {
+    const executor = connection || pool;
+    const [result] = await executor.execute<ResultSetHeader>(
+      `UPDATE vendas
+       SET status = 'CANCELADA',
+           motivo_cancelamento = ?,
+           cancelado_por = ?,
+           cancelado_em = NOW()
+       WHERE id = ? AND status <> 'CANCELADA'`,
+      [motivo, canceladoPor, id],
+    );
+    return result.affectedRows > 0;
   }
 }

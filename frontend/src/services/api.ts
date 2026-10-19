@@ -270,3 +270,10 @@ export async function buscarVendas(filtros?: {
   const dados = await apiFetch<VendaHistorico[]>(`/vendas${query}`);
   return Array.isArray(dados) ? dados : [];
 }
+
+export async function cancelarVenda(id: number, motivo: string): Promise<{ message: string; id: number }> {
+  return apiFetch<{ message: string; id: number }>(`/vendas/${id}/cancelar`, {
+    method: "PATCH",
+    body: JSON.stringify({ motivo }),
+  });
+}

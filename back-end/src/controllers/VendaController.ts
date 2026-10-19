@@ -201,4 +201,66 @@ export class VendaController {
       return res.status(500).json({ error: 'Erro ao buscar histórico de vendas.' });
     }
   }
+
+  // Só o gerente pode cancelar uma venda finalizada, e o estoque é devolvido ao sistema.
+  static async cancelar(req: Request, res: Response): Promise<Response> {
+    const connection = await pool.getConnection();
+
+    try {
+      const id = Number(req.params.id);
+      const motivo = String(req.body?.motivo ?? '').trim();
+      const usuarioId = req.usuario?.id;
+
+      if (!usuarioId) {
+        return res.status(401).json({ error: 'Usuário não autenticado.' });
+      }
+
+      if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ error: 'ID da venda inválido.' });
+      }
+
+      if (!motivo) {
+        return res.status(400).json({ error: 'Informe o motivo do cancelamento.' });
+      }
+
+      if (req.usuario?.perfil !== 'GERENTE') {
+        return res.status(403).json({ error: 'Apenas gerentes podem cancelar vendas.' });
+      }
+
+      const venda = await VendaModel.findById(id);
+      if (!venda) {
+        return res.status(404).json({ error: 'Venda não encontrada.' });
+      }
+
+      if (venda.status === 'CANCELADA') {
+        return res.status(409).json({ error: 'Esta venda já foi cancelada.' });
+      }
+
+      await connection.beginTransaction();
+
+      const itens = await ItemVendaModel.findByVendaId(id, connection);
+
+      for (const item of itens) {
+        const estoqueRestaurado = await ProdutoModel.updateEstoque(item.produto_id, item.quantidade, connection);
+        if (!estoqueRestaurado) {
+          throw new Error(`Não foi possível restaurar o estoque do produto ${item.produto_id}.`);
+        }
+      }
+
+      const cancelada = await VendaModel.cancelar(id, motivo, usuarioId, connection);
+      if (!cancelada) {
+        throw new Error('Não foi possível cancelar a venda.');
+      }
+
+      await connection.commit();
+      return res.status(200).json({ message: 'Venda cancelada com sucesso.', id });
+    } catch (error) {
+      await connection.rollback();
+      console.error(error);
+      const mensagem = error instanceof Error ? error.message : 'Erro ao cancelar venda.';
+      return res.status(400).json({ error: mensagem });
+    } finally {
+      connection.release();
+    }
+  }
 }
