@@ -1,6 +1,6 @@
-import { Router } from 'express';
-import { VendaController } from '../controllers/VendaController';
-import { autenticarToken, autorizarPerfil } from '../middlewares/auth.middleware';
+import { Router } from 'express'; // Router do módulo de vendas
+import { VendaController } from '../controllers/VendaController'; // Controlador responsável pela lógica da venda e do histórico
+import { autenticarToken, autorizarPerfil } from '../middlewares/auth.middleware'; // Garante sessão válida e perfil permitido no fluxo de vendas
 
 const vendaRoutes = Router();
 

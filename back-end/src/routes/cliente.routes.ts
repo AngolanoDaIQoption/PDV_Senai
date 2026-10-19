@@ -1,6 +1,6 @@
-import { Router } from 'express';
-import { ClienteController } from '../controllers/ClienteController';
-import { autenticarToken, autorizarPerfil } from '../middlewares/auth.middleware';
+import { Router } from 'express'; // Criador de rotas do módulo de clientes
+import { ClienteController } from '../controllers/ClienteController'; // Lógica principal dos endpoints de cliente
+import { autenticarToken, autorizarPerfil } from '../middlewares/auth.middleware'; // Proteção por autenticação e perfil
 
 const clienteRoutes = Router();
 

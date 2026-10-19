@@ -1,7 +1,7 @@
-import { useEffect, useState, type FormEvent } from "react";
-import type { Produto, Usuario } from "../types";
-import { buscarProdutos, criarProduto, atualizarProduto, inativarProduto, reativarProduto } from "../services/api";
-import { formatarMoeda } from "../utils/format";
+import { useEffect, useState, type FormEvent } from "react"; // Hooks do React para controlar a listagem e o formulário do catálogo
+import type { Produto, Usuario } from "../types"; // Tipos do domínio de produtos e do usuário autenticado
+import { buscarProdutos, criarProduto, atualizarProduto, inativarProduto, reativarProduto } from "../services/api"; // Operações de consulta e manutenção do catálogo de produtos
+import { formatarMoeda } from "../utils/format"; // Função para formatar valores monetários em Real
 
 const formVazio = {
   codigo: "",

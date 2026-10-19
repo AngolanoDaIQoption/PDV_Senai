@@ -1,8 +1,8 @@
-import { Router } from 'express';
-import bcrypt from 'bcrypt';
-import { UsuarioController } from '../controllers/UsuarioController';
-import { autenticarToken, autorizarPerfil } from '../middlewares/auth.middleware';
-import pool from '../config/db';
+import { Router } from 'express'; // Cria o grupo de rotas de usuário e seed inicial
+import bcrypt from 'bcrypt'; // Criptografa as senhas para evitar armazenar texto puro
+import { UsuarioController } from '../controllers/UsuarioController'; // Implementa as regras de autenticação e gestão de usuários
+import { autenticarToken, autorizarPerfil } from '../middlewares/auth.middleware'; // Regras de login e permissões por perfil
+import pool from '../config/db'; // Consulta direta do banco para criação do primeiro gerente
 
 const usuarioRoutes = Router();
 

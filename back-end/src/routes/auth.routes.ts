@@ -1,5 +1,5 @@
-import { Router } from 'express';
-import { UsuarioController } from '../controllers/UsuarioController';
+import { Router } from 'express'; // Cria um roteador isolado para as rotas públicas de autenticação
+import { UsuarioController } from '../controllers/UsuarioController'; // Controlador que valida as credenciais e gera o token JWT
 
 const authRoutes = Router();
 

@@ -1,6 +1,6 @@
-import { PoolConnection, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
-import pool from '../config/db';
-import { IItemVenda } from '../routes/types';
+import { PoolConnection, ResultSetHeader, RowDataPacket } from 'mysql2/promise'; // Suporte a transações e retorno das linhas do banco
+import pool from '../config/db'; // Conexão compartilhada da aplicação
+import { IItemVenda } from '../routes/types'; // Tipo do item vendido usado no histórico e na resposta da API
 
 export interface IItemVendaInsert {
   venda_id: number;

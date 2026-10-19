@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import type { VendaHistorico } from "../types";
-import { buscarVendas } from "../services/api";
-import { formatarMoeda } from "../utils/format";
+import { useEffect, useState } from "react"; // Hooks do React para consultar o histórico e controlar filtros
+import type { VendaHistorico } from "../types"; // Tipo do histórico de pedidos da loja
+import { buscarVendas } from "../services/api"; // Requisição para buscar todas as vendas cadastradas
+import { formatarMoeda } from "../utils/format"; // Formatação em moeda para exibir o valor total da venda
 
 function formatarFormaPagamento(forma: string): string {
   switch (forma) {

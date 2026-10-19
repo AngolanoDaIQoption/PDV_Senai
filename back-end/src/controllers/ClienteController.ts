@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
-import { ClienteModel } from '../models/Cliente.model';
-import { IClienteInput, IClienteUpdate } from '../routes/types';
+import { Request, Response } from 'express'; // Tipos das requisições HTTP do cadastro de clientes
+import { ClienteModel } from '../models/Cliente.model'; // Acesso à tabela de clientes no banco
+import { IClienteInput, IClienteUpdate } from '../routes/types'; // Tipos para entrada e atualização de clientes
 
 export class ClienteController {
   // Limpamos a formatação do CPF antes de conferir duplicidade e salvar.

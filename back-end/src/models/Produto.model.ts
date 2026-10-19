@@ -1,6 +1,6 @@
-import { PoolConnection, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
-import pool from '../config/db';
-import { IProduto, IProdutoInput, IProdutoUpdate } from '../routes/types';
+import { PoolConnection, ResultSetHeader, RowDataPacket } from 'mysql2/promise'; // Tipos usados para transações e leitura de linhas do MySQL
+import pool from '../config/db'; // Conexão com o banco de dados
+import { IProduto, IProdutoInput, IProdutoUpdate } from '../routes/types'; // Tipos do produto usados em consultas e atualizações
 
 const COLS = 'id, codigo_barras, descricao, preco, estoque, ativo, criado_em';
 const CAMPOS = ['codigo_barras', 'descricao', 'preco', 'estoque', 'ativo'];

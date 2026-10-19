@@ -1,4 +1,5 @@
 export function formatarMoeda(valor: number): string {
+  // Converte valores numéricos em reais em um formato amigável para a interface do caixa.
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 

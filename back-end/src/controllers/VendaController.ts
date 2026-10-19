@@ -1,12 +1,12 @@
-import { Request, Response } from 'express';
-import { ResultSetHeader } from 'mysql2/promise';
-import jwt from 'jsonwebtoken';
-import pool from '../config/db';
-import { ProdutoModel } from '../models/Produto.model';
-import { UsuarioModel } from '../models/Usuario.model';
-import { ItemVendaModel } from '../models/ItemVenda.model';
-import { VendaModel } from '../models/Venda.model';
-import { IVendaInput } from '../routes/types';
+import { Request, Response } from 'express'; // Tipos HTTP usados para receber a venda e devolver resposta da API
+import { ResultSetHeader } from 'mysql2/promise'; // Tipo de retorno de INSERT/UPDATE para consultas em MySQL
+import jwt from 'jsonwebtoken'; // Valida token do gerente quando há autorização especial de desconto
+import pool from '../config/db'; // Pool de conexões com o banco
+import { ProdutoModel } from '../models/Produto.model'; // Consulta e atualização de estoque dos itens vendidos
+import { UsuarioModel } from '../models/Usuario.model'; // Identificação do operador e do gerente autorizador
+import { ItemVendaModel } from '../models/ItemVenda.model'; // Registro dos itens da venda
+import { VendaModel } from '../models/Venda.model'; // Consulta do histórico e dados da venda
+import { IVendaInput } from '../routes/types'; // Tipo das informações enviadas no pedido de venda
 
 class VendaRequestError extends Error {
   constructor(

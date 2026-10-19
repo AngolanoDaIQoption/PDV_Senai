@@ -1,7 +1,7 @@
-import { useEffect, useState, type FormEvent } from "react";
-import type { Cliente, Usuario } from "../types";
-import { buscarClientes, criarCliente, atualizarCliente } from "../services/api";
-import { mascararCpf, mascararTelefone, validarCpf } from "../utils/format";
+import { useEffect, useState, type FormEvent } from "react"; // Hooks do React para carregar clientes e processar o formulário
+import type { Cliente, Usuario } from "../types"; // Tipos do cliente e do usuário logado
+import { buscarClientes, criarCliente, atualizarCliente } from "../services/api"; // Chamadas para consultar e persistir clientes na API
+import { mascararCpf, mascararTelefone, validarCpf } from "../utils/format"; // Utilitários para validação e máscara de documento/telefone
 
 const formVazio = { nome: "", cpf: "", telefone: "", email: "" };
 

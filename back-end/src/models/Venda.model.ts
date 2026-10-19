@@ -1,7 +1,7 @@
-import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
-import pool from '../config/db';
-import { ItemVendaModel } from './ItemVenda.model';
-import { IVendaCompleta } from '../routes/types';
+import { RowDataPacket, ResultSetHeader } from 'mysql2/promise'; // Tipos de resposta da base e operações DML
+import pool from '../config/db'; // Pool para consultar e registrar vendas
+import { ItemVendaModel } from './ItemVenda.model'; // Carrega os itens que compõem cada venda
+import { IVendaCompleta } from '../routes/types'; // Tipo completo do histórico da venda para a tela do gerente
 
 export interface IVenda {
   id?: number;

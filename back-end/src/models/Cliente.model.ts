@@ -1,6 +1,6 @@
-import { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
-import pool from '../config/db';
-import { ICliente, IClienteInput, IClienteUpdate } from '../routes/types';
+import { ResultSetHeader, RowDataPacket } from 'mysql2/promise'; // Tipos de retorno MySQL usados em INSERT/SELECT
+import pool from '../config/db'; // Pool de conexão com o banco
+import { ICliente, IClienteInput, IClienteUpdate } from '../routes/types'; // Tipos do cliente e dos dados de entrada/atualização
 
 const COLS = 'id, nome, cpf, telefone, email, criado_em';
 const CAMPOS = ['nome', 'cpf', 'telefone', 'email'];

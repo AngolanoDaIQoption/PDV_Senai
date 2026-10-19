@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { Perfil } from '../routes/types';
+import { Request, Response, NextFunction } from 'express'; // Tipos do Express para middleware de autenticação e autorização
+import jwt from 'jsonwebtoken'; // Gera e valida tokens JWT usados na sessão do sistema
+import { Perfil } from '../routes/types'; // Tipo do perfil para validar acesso por cargo
 
 export interface UsuarioTokenPayload {
   id: number;

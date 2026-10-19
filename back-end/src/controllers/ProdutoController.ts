@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
-import { ProdutoModel } from '../models/Produto.model';
-import { IProdutoInput } from '../routes/types';
+import { Request, Response } from 'express'; // Tipos de requisição e resposta HTTP usados no controller
+import { ProdutoModel } from '../models/Produto.model'; // Acesso ao banco para criar, listar e alterar produtos
+import { IProdutoInput } from '../routes/types'; // Tipo de entrada esperada no cadastro de produto
 
 export class ProdutoController {
   // Validamos os dados principais antes de pedir ao modelo para criar o produto.

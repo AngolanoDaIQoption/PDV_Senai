@@ -1,6 +1,6 @@
-import { Router } from 'express';
-import { ProdutoController } from '../controllers/ProdutoController';
-import { autenticarToken, autorizarPerfil } from '../middlewares/auth.middleware';
+import { Router } from 'express'; // Cria um grupo de rotas específico para produtos
+import { ProdutoController } from '../controllers/ProdutoController'; // Lógica de negócio para produtos
+import { autenticarToken, autorizarPerfil } from '../middlewares/auth.middleware'; // Middleware para autenticar usuário e validar perfil permitido
 
 const produtoRoutes = Router();
 

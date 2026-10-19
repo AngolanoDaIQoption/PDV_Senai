@@ -1,5 +1,5 @@
-import mysql from 'mysql2/promise';
-import dotenv from 'dotenv';
+import mysql from 'mysql2/promise'; // Driver MySQL assíncrono para consultas em Node.js
+import dotenv from 'dotenv'; // Carrega variáveis de ambiente do arquivo .env
 
 dotenv.config();
 
