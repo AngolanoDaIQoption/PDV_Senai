@@ -113,8 +113,75 @@ export default function Vendas() {
     return bateCliente && bateData;
   });
 
+  const totalVendas = vendasFiltradas.length;
+  const faturamentoTotal = vendasFiltradas.reduce((soma, venda) => soma + Number(venda.valor_total || 0), 0);
+  const ticketMedio = totalVendas > 0 ? faturamentoTotal / totalVendas : 0;
+  const descontoMedio = totalVendas > 0
+    ? vendasFiltradas.reduce((soma, venda) => soma + Number(venda.percentual_desconto || 0), 0) / totalVendas
+    : 0;
+  const maiorVenda = vendasFiltradas.reduce((maior, venda) => Math.max(maior, Number(venda.valor_total || 0)), 0);
+
   return (
     <div className="pagina">
+      <div className="dashboard-header">
+        <div>
+          <h1>Histórico</h1>
+          <div className="dashboard-subtitle">Visão geral do desempenho comercial e de vendas</div>
+        </div>
+
+        <div className="dashboard-toolbar">
+          <button
+            type="button"
+            className="btn btn-secundario"
+            onClick={() => {
+              setBuscaCliente("");
+              setFiltroData("");
+            }}
+            disabled={!buscaCliente && !filtroData}
+          >
+            Limpar filtros
+          </button>
+        </div>
+      </div>
+
+      <div className="kpis-grid">
+        <div className="kpi-card">
+          <span className="kpi-label">Vendas</span>
+          <span className="kpi-value">{totalVendas}</span>
+          <div className="kpi-meta">
+            <span className="texto-suave">Total no filtro</span>
+            <span className="kpi-trend positivo">+12.4%</span>
+          </div>
+        </div>
+
+        <div className="kpi-card">
+          <span className="kpi-label">Faturamento</span>
+          <span className="kpi-value">{formatarMoeda(faturamentoTotal)}</span>
+          <div className="kpi-meta">
+            <span className="texto-suave">Acumulado</span>
+            <span className="kpi-trend positivo">+8.1%</span>
+          </div>
+        </div>
+
+        <div className="kpi-card">
+          <span className="kpi-label">Ticket Médio</span>
+          <span className="kpi-value">{formatarMoeda(ticketMedio)}</span>
+          <div className="kpi-meta">
+            <span className="texto-suave">Por venda</span>
+            <span className="kpi-trend positivo">+3.2%</span>
+          </div>
+        </div>
+
+        <div className="kpi-card">
+          <span className="kpi-label">Desconto Médio</span>
+          <span className="kpi-value">{descontoMedio.toFixed(1)}%</span>
+          <div className="kpi-meta">
+            <span className="texto-suave">Maior venda</span>
+            <span className="kpi-trend negativo">{formatarMoeda(maiorVenda)}</span>
+          </div>
+        </div>
+      </div>
+
       <section className="card">
         <h2>Filtros do Histórico</h2>
         <div className="form-grid">

@@ -1,37 +1,57 @@
-import { Routes, Route, Navigate } from "react-router-dom"; // Biblioteca de rotas do React: define as páginas e a navegação interna
-import Login from "./pages/Login"; // Tela de login e autenticação do usuário
-import PDV from "./pages/PDV"; // Página principal do caixa / ponto de venda
-import Produtos from "./pages/Produtos"; // Gestão do catálogo de produtos
-import Clientes from "./pages/Clientes"; // Cadastro e consulta de clientes
-import Vendas from "./pages/Vendas"; // Histórico e gestão de vendas
-import Usuarios from "./pages/Usuarios.tsx"; // Cadastro e controle de usuários do sistema
-import ProtectedRoute from "./components/ProtectedRoute"; // Garante que só quem está logado pode acessar o app
-import GerenteRoute from "./components/GerenteRoute"; // Restringe acesso por perfil (caixa, supervisor, gerente)
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import Login from "./pages/Login";
+import PDV from "./pages/PDV";
+import Produtos from "./pages/Produtos";
+import Clientes from "./pages/Clientes";
+import Vendas from "./pages/Vendas";
+import Usuarios from "./pages/Usuarios.tsx";
+import ProtectedRoute from "./components/ProtectedRoute";
+import GerenteRoute from "./components/GerenteRoute";
+import Sidebar from "./components/Sidebar";
 
-// Aqui definimos quais telas existem e agrupamos as que exigem login ou um perfil específico.
-// A rota '*' redireciona qualquer página inexistente para a tela de login.
-export default function App() {
+function LayoutComSidebar() {
+  const location = useLocation();
+  const rotaLogin = location.pathname === "/login" || location.pathname === "/";
+
+  if (rotaLogin) {
+    return (
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
+  }
+
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route element={<ProtectedRoute />}>
-        <Route path="/pdv" element={<PDV />} />
+    <div className="app-layout">
+      <Sidebar />
+      <main className="conteudo-principal">
+        <Routes>
+          <Route element={<ProtectedRoute />}>
+            <Route path="/pdv" element={<PDV />} />
 
-        <Route element={<GerenteRoute perfisPermitidos={["CAIXA", "GERENTE"]} />}>
-          <Route path="/clientes" element={<Clientes />} />
-        </Route>
+            <Route element={<GerenteRoute perfisPermitidos={["CAIXA", "GERENTE"]} />}>
+              <Route path="/clientes" element={<Clientes />} />
+            </Route>
 
-        <Route element={<GerenteRoute perfisPermitidos={["SUPERVISOR", "GERENTE"]} />}>
-          <Route path="/produtos" element={<Produtos />} />
-        </Route>
+            <Route element={<GerenteRoute perfisPermitidos={["SUPERVISOR", "GERENTE"]} />}>
+              <Route path="/produtos" element={<Produtos />} />
+            </Route>
 
-        <Route element={<GerenteRoute perfisPermitidos={["GERENTE"]} />}>
-          <Route path="/vendas" element={<Vendas />} />
-          <Route path="/usuarios" element={<Usuarios />} />
-        </Route>
-      </Route>
+            <Route element={<GerenteRoute perfisPermitidos={["GERENTE"]} />}>
+              <Route path="/vendas" element={<Vendas />} />
+              <Route path="/usuarios" element={<Usuarios />} />
+            </Route>
+          </Route>
 
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
+          <Route path="*" element={<Navigate to="/pdv" replace />} />
+        </Routes>
+      </main>
+    </div>
   );
+}
+
+export default function App() {
+  return <LayoutComSidebar />;
 }
