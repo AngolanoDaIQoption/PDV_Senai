@@ -3,16 +3,20 @@ import {
   LayoutDashboard,
   LogOut,
   Package,
+  PanelLeftClose,
+  PanelLeftOpen,
   ShieldCheck,
   ShoppingCart,
   Store,
   Users,
 } from "lucide-react";
+import { useState } from "react";
 import type { Usuario } from "../types";
 import { useTheme } from "../utils/useTheme";
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const [menuAberto, setMenuAberto] = useState(true);
   const usuario: Usuario | null = JSON.parse(localStorage.getItem("usuario") ?? "null");
   const { isDark, toggleTheme } = useTheme();
 
@@ -28,13 +32,23 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${menuAberto ? "" : "recolhida"}`}>
       <div>
         <div className="sidebar-header">
           <div className="sidebar-marca">
             <Store size={18} />
             <span>MS² Vestuário</span>
           </div>
+
+          <button
+            type="button"
+            className="sidebar-toggle"
+            onClick={() => setMenuAberto((valor) => !valor)}
+            aria-label={menuAberto ? "Recolher menu" : "Expandir menu"}
+            title={menuAberto ? "Recolher menu" : "Expandir menu"}
+          >
+            {menuAberto ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+          </button>
         </div>
 
         <nav className="sidebar-nav" aria-label="Menu principal">
@@ -95,13 +109,14 @@ export default function Sidebar() {
           onClick={toggleTheme}
           title={isDark ? "Mudar para Modo Claro" : "Mudar para Modo Escuro"}
         >
-          {isDark ? "☀️ Claro" : "🌙 Escuro"}
+          <span>{isDark ? "☀️" : "🌙"}</span>
+          <span>{isDark ? "Claro" : "Escuro"}</span>
         </button>
 
         {usuario && (
           <div className="usuario-chip sidebar-user">
             <span className="avatar">{usuario.nome?.charAt(0).toUpperCase() ?? "U"}</span>
-            <span>{usuario.nome}</span>
+            <span className="sidebar-user-nome">{usuario.nome}</span>
           </div>
         )}
 
