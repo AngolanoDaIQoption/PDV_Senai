@@ -116,7 +116,10 @@ export default function Sidebar() {
         {usuario && (
           <div className="usuario-chip sidebar-user">
             <span className="avatar">{usuario.nome?.charAt(0).toUpperCase() ?? "U"}</span>
-            <span className="sidebar-user-nome">{usuario.nome}</span>
+            <div className="sidebar-user-meta">
+              <span className="sidebar-user-nome">{usuario.nome}</span>
+              <span className="sidebar-user-role">{usuario.perfil}</span>
+            </div>
           </div>
         )}
 
