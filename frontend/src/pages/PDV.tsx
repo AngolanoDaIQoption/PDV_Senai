@@ -269,7 +269,7 @@ export default function PDV() {
                 <td>{p.estoque}</td>
                 <td>
                   <button
-                    className="btn btn-primario"
+                    className="btn btn-secundario"
                     onClick={() => adicionar(p)}
                     disabled={salvando || p.estoque < 1}
                   >
