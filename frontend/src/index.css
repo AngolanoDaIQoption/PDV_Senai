@@ -1,9 +1,9 @@
 :root {
-  --fundo: #edf3fa;
+  --fundo: #e5edf5;
   --superficie: #ffffff;
-  --texto: #1c2430;
-  --texto-suave: #667085;
-  --borda: #d7e1ee;
+  --texto: #0f172a;
+  --texto-suave: #475569;
+  --borda: #cbd5e1;
   --primaria: #1d4ed8;
   --primaria-escura: #163db6;
   --perigo: #b42318;
@@ -65,11 +65,11 @@ h2 { font-size: 1.1rem; }
 @media (max-width: 900px) { .pdv-grid { grid-template-columns: 1fr; } }
 
 .card {
-  background: rgba(255, 255, 255, 0.72);
+  background: #ffffff;
   border: 1px solid var(--borda);
   border-radius: var(--raio);
   padding: 20px;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 12px 24px -4px rgba(15, 23, 42, 0.08);
   backdrop-filter: blur(6px);
 }
 body.dark .card {
@@ -83,6 +83,7 @@ body.dark .card {
   background-color: var(--superficie);
   color: var(--texto);
   border-right: 1px solid var(--borda);
+  box-shadow: 2px 0 16px rgba(15, 23, 42, 0.04);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -433,7 +434,7 @@ body.dark .btn-secundario:hover {
   margin-bottom: 24px;
 }
 .kpi-card {
-  background: rgba(255, 255, 255, 0.7);
+  background: #ffffff;
   border: 1px solid var(--borda);
   border-radius: 16px;
   padding: 18px 18px 16px;
@@ -489,7 +490,7 @@ body.dark .kpi-card {
   gap: 16px;
 }
 .dashboard-panel {
-  background: rgba(255, 255, 255, 0.7);
+  background: #ffffff;
   border: 1px solid var(--borda);
   border-radius: 16px;
   padding: 20px;

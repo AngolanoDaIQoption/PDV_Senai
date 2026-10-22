@@ -16,7 +16,7 @@ import { useTheme } from "../utils/useTheme";
 
 export default function Sidebar() {
   const navigate = useNavigate();
-  const [menuAberto, setMenuAberto] = useState(true);
+  const [menuAberto, setMenuAberto] = useState(false);
   const usuario: Usuario | null = JSON.parse(localStorage.getItem("usuario") ?? "null");
   const { isDark, toggleTheme } = useTheme();
 

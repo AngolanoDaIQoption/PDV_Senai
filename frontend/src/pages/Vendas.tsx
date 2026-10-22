@@ -26,7 +26,7 @@ function formatarDataHora(dataString?: string): string {
 }
 
 export default function Vendas() {
-  // O gerente consulta aqui as vendas e pode abrir os itens de cada compra.
+  // O gerente consulta aqui o histórico de vendas e pode abrir os itens de cada compra, mesmo sem o caixa aberto.
   const [vendas, setVendas] = useState<VendaHistorico[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
@@ -125,8 +125,8 @@ export default function Vendas() {
     <div className="pagina">
       <div className="dashboard-header">
         <div>
-          <h1>Histórico</h1>
-          <div className="dashboard-subtitle">Visão geral do desempenho comercial e de vendas</div>
+          <h1>Histórico de Vendas</h1>
+          <div className="dashboard-subtitle">Visão geral do desempenho comercial e pedidos da loja</div>
         </div>
 
         <div className="dashboard-toolbar">
