@@ -1,79 +1,102 @@
 # 🛍️ MS² Vestuário — Sistema de Gestão e Frente de Caixa (PDV)
 
-Sistema de gestão para loja de vestuário com foco em caixa, controle de produtos, clientes, usuários e histórico de vendas.
+Sistema comercial completo para gestão de lojas de vestuário e varejo com foco em frente de caixa (PDV de balcão), controle de estoque, abertura/fechamento de turno de caixa com auditoria de saldo, catálogo de produtos, cadastro ágil de clientes, controle de usuários por perfil e histórico analítico de vendas.
 
-## Visão geral
+---
 
-O projeto foi desenvolvido em arquitetura full stack com:
+## 📋 Sumário
+1. [Visão Geral](#visão-geral)
+2. [Stack Tecnológica](#stack-tecnológica)
+3. [Estrutura do Projeto](#estrutura-do-projeto)
+4. [Pré-requisitos](#pré-requisitos)
+5. [Configuração do Banco de Dados (MySQL)](#configuração-do-banco-de-dados-mysql)
+6. [Instalação e Execução do Backend](#instalação-e-execução-do-backend)
+7. [Instalação e Execução do Frontend](#instalação-e-execução-do-frontend)
+8. [Autenticação e Permissões por Perfil](#autenticação-e-permissões-por-perfil)
+9. [Funcionalidades do Sistema](#funcionalidades-do-sistema)
+   - [Frente de Caixa (PDV Comercial)](#-frente-de-caixa-pdv-comercial)
+   - [Histórico e Auditoria de Vendas](#-histórico-e-auditoria-de-vendas)
+   - [Gestão de Clientes](#-gestão-de-clientes)
+   - [Catálogo de Produtos](#-catálogo-de-produtos)
+   - [Gestão de Usuários](#-gestão-de-usuários)
+10. [Roteiro Prático de Demonstração e Testes](#roteiro-prático-de-demonstração-e-testes)
+11. [Fundamentos de Engenharia de Software](#fundamentos-de-engenharia-de-software)
 
-- Frontend em React + Vite
-- Backend em Node.js + Express + TypeScript
-- Banco de dados em MySQL
-- Autenticação por JWT
-- Controle de acesso por perfil: CAIXA, SUPERVISOR e GERENTE
+---
 
-A aplicação permite:
+## Visão Geral
 
-- realizar vendas com cálculo de subtotal, desconto e valor final;
-- controlar estoque em tempo real;
-- cadastrar clientes e consultar histórico;
-- gerenciar produtos e usuários conforme perfil;
-- impedir ações sensíveis sem autorização do gerente.
+O projeto adota uma arquitetura em camadas orientada a serviços:
+- **Frontend SPA**: React 19 com TypeScript, empacotamento rápido via Vite e roteamento seguro com React Router DOM v7.
+- **Backend API REST**: Node.js com Express e TypeScript estrito.
+- **Banco de Dados Relacional**: MySQL 8+ com integridade referencial, chaves estrangeiras e suporte a transações ACID.
+- **Segurança**: Autenticação Stateless via JWT, senhas criptografadas com `bcrypt` e controle de permissões baseado em papéis (RBAC).
+- **UX/Design System**: Interface com suporte nativo a **Modo Claro (com alto contraste)** e **Modo Escuro (Slate/Navy)**, responsiva e com foco em agilidade operacional.
 
-## Stack tecnológica
+---
 
-| Camada | Tecnologia | Uso no projeto |
-| --- | --- | --- |
-| Frontend | React | Interface do usuário |
-| Frontend | Vite | Servidor de desenvolvimento e build |
-| Frontend | React Router DOM | Rotas protegidas e navegação |
-| Backend | Node.js | Execução da API |
-| Backend | Express | Rotas e middlewares |
-| Backend | TypeScript | Tipagem e organização do código |
-| Backend | MySQL2 | Conexão com banco de dados |
-| Backend | JWT | Autenticação e autorização |
-| Backend | bcrypt | Criptografia de senhas |
-| Banco | MySQL | Persistência de clientes, produtos, usuários e vendas |
+## Stack Tecnológica
 
-## Estrutura do projeto
+| Camada | Tecnologia | Função no Sistema |
+| :--- | :--- | :--- |
+| **Frontend** | React 19 + TypeScript | Interface de usuário declarativa, fortemente tipada |
+| **Build Tool** | Vite | Servidor de desenvolvimento rápido e bundler otimizado |
+| **Roteamento** | React Router DOM v7 | Controle de navegação e rotas protegidas por permissão |
+| **Ícones** | Lucide React | Biblioteca de ícones modernos e consistentes |
+| **Backend** | Node.js + Express + TypeScript | Servidor da API RESTful com tipagem estrita |
+| **Banco de Dados** | MySQL 8+ (Driver `mysql2`) | Persistência relacional de dados transacionais |
+| **Autenticação** | JSON Web Token (JWT) | Emissão e validação de tokens de sessão bearer |
+| **Criptografia** | bcrypt | Hashing seguro de senhas com salt |
+
+---
+
+## Estrutura do Projeto
 
 ```text
-PDV/
+PDV_Senai/
 ├── back-end/
 │   ├── src/
-│   │   ├── config/
-│   │   ├── controllers/
-│   │   ├── middlewares/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   └── index.ts
-│   ├── .env
+│   │   ├── config/          # Conexão e pool do banco de dados (MySQL)
+│   │   ├── controllers/     # Controladores das rotas da API
+│   │   ├── middlewares/     # Validação de token JWT e checagem de perfil (RBAC)
+│   │   ├── models/          # Modelagem de dados e queries SQL
+│   │   ├── routes/          # Definição de endpoints HTTP
+│   │   └── index.ts         # Inicialização do servidor Express
+│   ├── .env                 # Variáveis de ambiente da API
 │   ├── package.json
-│   ├── seed.ts
+│   ├── seed.ts              # Script para dados iniciais de teste
 │   └── tsconfig.json
 ├── frontend/
 │   ├── src/
-│   ├── public/
-│   ├── index.html
+│   │   ├── components/      # Componentes reutilizáveis (Sidebar, Rotas, Modais)
+│   │   ├── pages/           # Telas do sistema (PDV, Vendas, Produtos, Clientes, Usuários, Login)
+│   │   ├── services/        # Cliente HTTP (apiFetch, auth, vendas, produtos)
+│   │   ├── types/           # Interfaces e tipos compartilhados em TypeScript
+│   │   ├── utils/           # Máscaras, validações (CPF/Telefone), moedas e temas
+│   │   ├── App.tsx          # Definição das rotas e layouts
+│   │   ├── index.css        # Folha de estilo semântica com suporte a Dark/Light Mode
+│   │   └── main.tsx         # Ponto de entrada da aplicação React
 │   ├── package.json
 │   ├── vite.config.ts
-│   └── tsconfig.*.json
+│   └── tsconfig.json
 ├── README.md
 └── package.json
 ```
 
+---
+
 ## Pré-requisitos
 
-Antes de rodar o projeto, verifique se a máquina possui:
+Para executar o projeto localmente, certifique-se de possuir:
+- **Node.js**: versão 20 LTS ou superior
+- **npm**: versão 10 ou superior
+- **MySQL Server**: versão 8.0 ou superior (rodando localmente ou via container Docker)
 
-- Node.js 20+
-- npm
-- MySQL 8+
-- editor como VS Code
+---
 
-## Configuração do banco de dados
+## Configuração do Banco de Dados (MySQL)
 
-Crie o banco e as tabelas no MySQL com o script abaixo. Esse bloco gera o esquema necessário para o funcionamento da API e do módulo de vendas.
+Execute o script SQL abaixo no seu cliente MySQL (Workbench, DBeaver ou terminal) para provisionar o banco de dados e as tabelas com integridade relacional:
 
 ```sql
 CREATE DATABASE IF NOT EXISTS ms2_vestuario;
@@ -161,231 +184,196 @@ CREATE TABLE itens_venda (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-Tabela principal do projeto:
+---
 
-- clientes
-- produtos
-- usuarios
-- vendas
-- itens_venda
+## Instalação e Execução do Backend
 
-## Backend
+1. Acesse o diretório `back-end`:
+   ```bash
+   cd back-end
+   npm install
+   ```
 
-### 1) Instalar dependências
+2. Crie ou edite o arquivo `.env` dentro de `back-end`:
+   ```env
+   PORT=3000
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASSWORD=sua_senha_mysql
+   DB_PORT=3306
+   DB_NAME=ms2_vestuario
+   JWT_SECRET=chave_secreta_pdv_2026
+   ```
 
-```bash
-cd back-end
-npm install
-```
+3. (Opcional) Popule o banco com dados iniciais:
+   ```bash
+   npm run seed
+   ```
 
-### 2) Criar arquivo .env
+4. Inicie o servidor da API em modo de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+   > A API estará rodando em `http://localhost:3000`. O endpoint de healthcheck é `http://localhost:3000/api/health`.
 
-Crie um arquivo `.env` dentro de `back-end` com o seguinte conteúdo:
+---
 
-```env
-PORT=3000
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=sua_senha_mysql
-DB_PORT=3306
-DB_NAME=ms2_vestuario
-JWT_SECRET=chave_secreta_pdv_2026
-```
+## Instalação e Execução do Frontend
 
-### 3) Rodar a API
+1. Abra um novo terminal e acesse o diretório `frontend`:
+   ```bash
+   cd frontend
+   npm install
+   ```
 
-```bash
-npm run dev
-```
+2. Inicie o servidor de desenvolvimento do Vite:
+   ```bash
+   npm run dev
+   ```
 
-A API ficará disponível em:
+3. Acesse a aplicação no navegador em:
+   ```text
+   http://localhost:5173
+   ```
 
-```text
-http://localhost:3000
-```
+---
 
-O endpoint de saúde:
+## Autenticação e Permissões por Perfil
 
-```text
-http://localhost:3000/api/health
-```
+O acesso aos recursos segue uma matriz de controle de permissões (RBAC):
 
-## Frontend
+| Perfil | PDV (Caixa) | Clientes | Catálogo de Produtos | Histórico de Vendas | Gestão de Usuários | Autorização de Desconto |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **CAIXA** | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ (até 10%) |
+| **SUPERVISOR** | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ (até 10%) |
+| **GERENTE** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (ilimitado) |
 
-### 1) Instalar dependências
+* **Alçada de Desconto**: Operadores com perfil `CAIXA` ou `SUPERVISOR` podem aplicar descontos de até 10%. Descontos superiores a 10% exigem a liberação em tempo real de um `GERENTE` via modal com senha (`ModalAutorizacaoGerente`).
 
-```bash
-cd frontend
-npm install
-```
+---
 
-### 2) Rodar a aplicação
+## Funcionalidades do Sistema
 
-```bash
-npm run dev
-```
+### 🛒 Frente de Caixa (PDV Comercial)
+A tela de PDV foi projetada nos moldes de SaaS comerciais de balcão (como Shopify POS, Olist e Totvs):
 
-A interface normalmente abre em:
+* **Controle de Turno de Caixa (Abertura e Fechamento)**:
+  - **Caixa Fechado**: Exibição minimalista e centralizada com relógio digital em tempo real (`tabular-nums`), data completa por extenso e status destacado.
+  - **Abertura de Caixa**: Solicitação do valor disponível em espécie para **fundo de troco inicial**.
+  - **Fechamento e Auditoria de Caixa**:
+    - Demonstrativo do turno em tempo real: Fundo inicial + entradas em dinheiro + vendas eletrônicas = **Saldo esperado na gaveta**.
+    - **Regra de Tolerância de R$ 2,00**: O operador insere o valor contado na gaveta. Se a diferença (falta ou sobra) estiver dentro de até **R$ 2,00**, o fechamento é aprovado; se exceder R$ 2,00, o sistema bloqueia o encerramento e orienta a recontagem.
+* **Leitor de Código de Barras e Busca Preditiva (Dropdown)**:
+  - Input ágil com `auto-focus` persistente e campo de quantidade personalizável.
+  - **Dropdown de sugestões em tempo real**: Ao digitar qualquer termo (ex: `"cam"`), filtra e prioriza produtos que começam ou contêm a palavra, exibindo SKU, estoque e preço unitário.
+  - Suporte à navegação por teclado: setas <kbd>↓</kbd> / <kbd>↑</kbd> para navegar e <kbd>Enter</kbd> para selecionar, além de clique direto com mouse.
+  - Bipagem instantânea com leitores ópticos físicos (código + Enter).
+* **Cadastro Rápido de Cliente no Balcão**:
+  - Botão `+ Novo Cliente` integrado ao carrinho para cadastrar o cliente na hora da compra sem trocar de tela.
+  - Máscara automática e validação algorítmica de CPF (`validarCpf`), telefone e e-mail.
+  - Vínculo e seleção automática do cliente cadastrado na venda ativa.
+* **Calculadora de Troco Automática**:
+  - Ao selecionar a forma de pagamento **Dinheiro**, disponibiliza campo para informar o valor recebido e calcula o troco do cliente instantaneamente.
+* **Atalhos Globais de Teclado**:
+  - <kbd>Enter</kbd>: Bipar / adicionar produto ou selecionar sugestão do dropdown.
+  - <kbd>F2</kbd>: Finalizar a venda ativa (se houver produtos no carrinho).
+  - <kbd>Esc</kbd>: Fechar modais abertos, limpar termo de busca ou cancelar a venda em andamento.
+* **Barra Lateral com Início Recolhido**:
+  - A barra lateral de navegação inicia fechada por padrão (`.recolhida`), maximizando a área útil do balcão para os operadores de caixa.
 
-```text
-http://localhost:5173
-```
+---
 
-## Fluxo de autenticação e permissões
+### 📊 Histórico e Auditoria de Vendas
+A tela de **Vendas** funciona de forma independente do caixa, permitindo que o gerente consulte o histórico da loja a qualquer momento:
+* **KPIs Comerciais**: Total de vendas, faturamento acumulado, ticket médio e percentual de desconto médio.
+* **Filtros Dinâmicos**: Busca textual instantânea por cliente e filtro por data específica.
+* **Detalhamento Mestre-Detalhe**: Visualização expandida de cada pedido com os itens comprados, preços históricos aplicados e operador responsável.
+* **Cancelamento de Venda**: Permite ao gerente cancelar vendas registradas informando o motivo formal para fins de auditoria e conformidade fiscal.
 
-O sistema usa JWT para autenticar usuários.
+---
 
-Perfis disponíveis:
+### 👥 Gestão de Clientes
+* Cadastro com validação estrita de CPF (dígitos verificadores oficiais).
+* Máscara inteligente para CPF (`000.000.000-00`) e Telefone (`(00) 00000-0000`).
+* Prevenção de duplicidade de documentos no banco de dados.
 
-- CAIXA: acesso ao caixa e cadastro de clientes
-- SUPERVISOR: gestão de produtos
-- GERENTE: acesso completo, como gestão de usuários e histórico de vendas
+---
 
-As rotas são protegidas por middlewares de autenticação e autorização, evitando acesso indevido.
+### 📦 Catálogo de Produtos
+* Cadastro com código de barras/SKU exclusivo, descrição, preço de venda e saldo de estoque.
+* Atualização de dados cadastrais e controle de ativação/inativação de produtos.
 
-## Funcionalidades principais
+---
 
-### PDV
+### 🛡️ Gestão de Usuários
+* Administração de operadores da loja com atribuição de perfis (`CAIXA`, `SUPERVISOR`, `GERENTE`).
+* Bloqueio de inativação acidental da própria conta de gerente logada.
 
-- busca de produtos por código ou descrição;
-- inserção no carrinho;
-- alteração de quantidade;
-- cálculo de subtotal e desconto;
-- escolha de forma de pagamento;
-- integração com autorização de gerente em descontos maiores.
+---
 
-### Produtos
+## Roteiro Prático de Demonstração e Testes
 
-- cadastro de produto;
-- edição de dados;
-- ativação/inativação;
-- ajuste de preço e estoque.
+Para validar a integridade de ponta a ponta:
 
-### Clientes
+1. **Acesso com Perfil Caixa**:
+   - Faça login com um operador de caixa.
+   - Acesse o **PDV**. Note a tela de **Caixa Fechado** com o relógio em tempo real.
+   - Clique em **"Abrir Caixa"** e informe um fundo de troco (ex: `R$ 100,00`).
+2. **Leitura de Produtos com Dropdown**:
+   - Digite `"cam"` no campo de código de barras. Observe o dropdown listando as opções correspondentes com preço e saldo de estoque.
+   - Use as setas <kbd>↓</kbd> / <kbd>↑</kbd> e pressione <kbd>Enter</kbd> para adicionar o produto ao carrinho.
+   - Teste digitar o código de barras exato (simulando um leitor físico) e aperte <kbd>Enter</kbd>.
+3. **Cadastro Rápido de Cliente**:
+   - No painel lateral, clique em **"+ Novo Cliente"**.
+   - Preencha o nome e um CPF válido. Confirme e observe o cliente sendo vinculado automaticamente à venda.
+4. **Finalização via Atalho F2**:
+   - Selecione a forma **Dinheiro**, digite o valor recebido e confira o troco calculado.
+   - Pressione <kbd>F2</kbd> para finalizar a venda com baixa imediata no estoque.
+5. **Fechamento e Auditoria de Caixa**:
+   - No menu **"Mais ações"**, selecione **"Fechar Caixa"**.
+   - Observe o demonstrativo do turno exibindo o fundo inicial somado às vendas em dinheiro realizadas.
+   - Teste digitar um valor com divergência superior a R$ 2,00 e verifique o **bloqueio da confirmação**.
+   - Digite um valor com diferença de até R$ 2,00 (ou o valor exato) e conclua o encerramento do turno com sucesso.
+6. **Acesso com Perfil Gerente**:
+   - Entre com o perfil de Gerente e acesse a aba **Vendas**.
+   - Observe que o histórico e os KPIs comerciais permanecem acessíveis e atualizados mesmo com o caixa fechado.
 
-- cadastro com validação de CPF;
-- máscara e formatação dos campos;
-- consulta/listagem;
-- edição dos dados cadastrais.
+---
 
-### Usuários
+## Fundamentos de Engenharia de Software
 
-- cadastro de novos usuários;
-- alteração de perfil;
-- ativação/inativação;
-- proteção para não inativar gerente.
-
-### Vendas
-
-- registro do histórico;
-- detalhamento dos itens comprados;
-- filtros por cliente e data.
-
-## Primeiro acesso
-
-No login, há a opção de criar o usuário inicial (setup). Essa ação cria o primeiro gerente do sistema.
-
-Também é possível criar um usuário manualmente pelo painel administrativo, desde que haja login do gerente.
-
-## Observações importantes
-
-- O backend grava o histórico da venda e os itens comprados, preservando o preço na data da compra.
-- O estoque é atualizado junto com a venda em uma mesma transação, evitando inconsistência.
-- Descontos acima do limite permitido exigem autorização de gerente.
-- A senha do usuário é armazenada com hash usando bcrypt.
-
-## Scripts disponíveis
-
-### Backend
-
-```bash
-npm run dev
-npm run build
-npm run start
-npm run seed
-```
-
-### Frontend
-
-```bash
-npm run dev
-npm run build
-npm run preview
-```
-
-## Conclusão
-
-Este projeto representa uma aplicação de PDV funcional, com foco em arquitetura, segurança, permissões por perfil e consistência de dados. A estrutura atual está organizada para facilitar manutenção, evolução e apresentação do sistema em ambiente acadêmico ou profissional.
-
-## 6. Passo a Passo: Frontend (Interface Web)
-
-### Instalação e Variáveis de Conexão
-
-1. Abra uma **nova aba de terminal** e navegue até a pasta do frontend:
-
-   Bash
-```
-   cd front-end
-
-```
-2. Instale os pacotes:
-
-   Bash
-```
-npm install
-
-```
-
-### Execução e Portas de Acesso
-
-Execute o comando de inicialização do Vite:
-
-```
-npm run dev
-
-```
-
-Acesse o sistema no seu navegador através da URL fornecida (geralmente `http://localhost:5173/`).
-
-## 7. Guia de Exploração Didática e Roteiro de Testes
-
-```
+```mermaid
 sequenceDiagram
     autonumber
     actor Operador as Caixa (Navegador)
     participant Front as Frontend (React)
     participant Back as Backend (Express)
-    participant DB as MySQL (Transação)
+    participant DB as MySQL (Transação ACID)
 
-    Note over Operador,DB: Processo de Venda com Baixa de Estoque
-    Operador->>Front: Adiciona produtos ao carrinho e finaliza
-    Front->>Back: POST /api/vendas (Header: Bearer Token)
-    Back->>DB: BEGIN TRANSACTION
-    Back->>DB: INSERT INTO vendas (calcula totais)
-    Back->>DB: Loop: INSERT INTO itens_venda (copia preço histórico)
+    Note over Operador,DB: Fluxo de Checkout com Preservação Histórica
+    Operador->>Front: Pressiona F2 (Finalizar Venda)
+    Front->>Back: POST /api/vendas (Header: Bearer Token JWT)
+    Back->>DB: START TRANSACTION
+    Back->>DB: INSERT INTO vendas (cliente, subtotal, desconto, total, pagamento)
+    Back->>DB: Loop: INSERT INTO itens_venda (copia preco_unitario histórico)
     Back->>DB: Loop: UPDATE produtos SET estoque = estoque - qtd
-    alt Sucesso no Estoque
+    alt Sucesso e Estoque Disponível
         Back->>DB: COMMIT
-        Back-->>Front: 201 Created (Venda Concluída)
-    else Falha (Estoque Insuficiente)
+        Back-->>Front: 201 Created (venda_id, valor_total)
+        Front-->>Operador: Notificação de sucesso e carrinho limpo
+    else Falha de Estoque ou Conexão
         Back->>DB: ROLLBACK
-        Back-->>Front: 400 Bad Request (Erro de Estoque)
+        Back-->>Front: 400 Bad Request / 500 Error
+        Front-->>Operador: Toast com mensagem descritiva do erro
     end
-
 ```
 
-### Roteiro Prático:
+- **Padrão Master-Detail (Mestre-Detalhe)**: A tabela `vendas` armazena o cabeçalho do pedido (data, cliente, operador, forma de pagamento, totais), enquanto `itens_venda` preserva os itens individuais.
+- **Imutabilidade de Preço Histórico**: Cada registro em `itens_venda` armazena uma cópia do `preco_unitario` praticado no instante da compra. Alterações futuras de preço no catálogo de produtos não distorcem relatórios contábeis passados.
+- **Transacionalidade ACID**: A criação da venda, o registro dos itens e a baixa de estoque ocorrem dentro de uma mesma transação SQL (`COMMIT` / `ROLLBACK`). Se qualquer produto não tiver saldo suficiente, todas as operações são revertidas.
+- **Prevenção de Floating Point Issues**: Todos os cálculos monetários de descontos, subtotais e conferência de caixa são processados em centavos inteiros antes da conversão para moeda, eliminando imprecisões de ponto flutuante do JavaScript.
+- **Acessibilidade e Ergonomia**: Suporte nativo a atalhos rápidos de teclado (<kbd>Enter</kbd>, <kbd>F2</kbd>, <kbd>Esc</kbd>) reduzindo a dependência do mouse no balcão de vendas.
 
-1. **Autenticação:** Faça login no sistema. Verifique a liberação de menus baseada no seu perfil (`CAIXA` vê apenas PDV e Clientes; `GERENTE` vê o Histórico de Vendas e Gestão de Usuários).
-2. **Catálogo de Produtos:** Com um perfil gerencial/supervisor, cadastre um produto com preço e estoque inicial.
-3. **Frente de Caixa (PDV):** Adicione o produto ao carrinho. Aplique um desconto. (Se for maior que a alçada permitida, note a exigência de autorização do gerente).
-4. **Finalização Segura:** Finalize a venda e verifique no banco de dados se a tabela `itens_venda` copiou o preço unitário e se a tabela `produtos` subtraiu corretamente a quantidade vendida.
+---
 
-## 8. Pontos Críticos de Aprendizado Técnico
-
-- **Padrão Master-Detail (Mestre-Detalhe):** A arquitetura separa o "cabeçalho" do cupom fiscal (`vendas`) do "corpo" dos produtos comprados (`itens_venda`). Essa modelagem garante a normalização do banco relacional.
-- **Preservação de Histórico Contábil:** A tabela `itens_venda` possui a coluna `preco_unitario`. O preço é copiado da tabela de produtos no momento exato do checkout. Se o preço do produto sofrer inflação no futuro, as vendas do passado permanecem intactas, evitando fraudes contábeis.
-- **Transações SQL (ACID):** Durante o checkout, o sistema executa múltiplos comandos (`INSERT` na venda, `INSERT` nos itens, `UPDATE` no estoque). O uso de transações (`BEGIN`, `COMMIT`, `ROLLBACK`) garante que o banco de dados nunca ficará inconsistente caso haja uma queda de energia ou erro no meio do processo.
-- **Segurança e RBAC:** Middlewares verificam não apenas a validade criptográfica do Token JWT, mas também a hierarquia da conta (`perfil`), bloqueando acessos indevidos antes mesmo que a rota seja executada.
-
- *Desenvolvido para fins acadêmicos e práticas avançadas de arquitetura de software.*
+*Sistema desenvolvido para fins didáticos e aplicação prática de padrões avançados de arquitetura de software e experiência do usuário (UX).*
