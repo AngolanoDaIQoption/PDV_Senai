@@ -131,6 +131,34 @@ body.dark .card {
   background: rgba(148, 163, 184, 0.12);
   color: var(--texto);
 }
+.sidebar-toggle {
+  position: relative;
+}
+.sidebar.recolhida [data-tooltip] {
+  position: relative;
+}
+.sidebar.recolhida [data-tooltip]:hover::after,
+.sidebar.recolhida [data-tooltip]:focus-visible::after,
+.sidebar-toggle:hover::after,
+.sidebar-toggle:focus-visible::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  z-index: 20;
+  transform: translateY(-50%);
+  padding: 7px 11px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: var(--superficie);
+  color: var(--texto);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.16);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+}
 .sidebar.recolhida .sidebar-header {
   justify-content: center;
   padding-inline: 0;
